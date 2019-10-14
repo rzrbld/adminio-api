@@ -1,2 +1,2 @@
 # adminio
-simple admin API for min.io (minio) s3 server
+simple admin API for minio.io (minio) s3 server
