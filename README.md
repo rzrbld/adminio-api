@@ -1,5 +1,5 @@
-# adminio
-This is a simple admin API for min.io (minio) s3 server
+# adminio-api
+This is a simple admin API for min.io (minio) s3 server. Here is also an frontend for this API - [adminio-ui](https://github.com/rzrbld/adminio-ui)
 
 ## how to run
 1. start minio server
