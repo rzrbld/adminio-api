@@ -1,8 +1,12 @@
 # adminio-api
-This is a simple admin API for min.io (minio) s3 server. Here is also an frontend for this API - [adminio-ui](https://github.com/rzrbld/adminio-ui)
+This is a simple admin "REST" API for [minio](https://min.io/) s3 server. 
+Here is a Web UI for this API - [adminio-ui](https://github.com/rzrbld/adminio-ui)
 
-## how to run
-1. start minio server
+## run with docker
+`` docker run rzrbld/adminio-api:0.2 ``
+
+## how to run manually
+1. [start](https://docs.min.io/) minio server
 2. set env variables:
 
 | Variable   |      Description      |  Default |
