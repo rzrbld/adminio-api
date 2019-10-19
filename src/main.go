@@ -62,7 +62,7 @@ func bodyResHandler(ctx iris.Context,err error,body interface{}) interface{} {
 func main() {
 	fmt.Println("\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            ")
 	fmt.Println("simple admin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.2 ")
+	fmt.Println("version  : 0.3 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
 	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \r\n")
@@ -124,7 +124,7 @@ func main() {
 	
 	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions) // <- important for the preflight.
 	{
-
+	
 		v1.Post("/add-user", func(ctx iris.Context) {
 
 			// debug body
@@ -142,6 +142,56 @@ func main() {
     		var res = defaultResHandler(ctx,err)
     		ctx.JSON(res)
 			
+		})
+
+		v1.Post("/create-user-extended", func(ctx iris.Context) {
+
+			p := policySet{}
+			p.policyName = ctx.FormValue("policyName")
+			p.entityName = ctx.FormValue("accessKey")
+
+			u := User{}
+			u.accessKey = ctx.FormValue("accessKey")
+			u.secretKey = ctx.FormValue("secretKey")
+
+    		err = madmClnt.AddUser(u.accessKey,u.secretKey)
+			if err != nil {
+				log.Print(err)
+				ctx.JSON(iris.Map{"error": err.Error()})
+			} else {
+				err = madmClnt.SetPolicy(p.policyName,p.entityName,false)
+				var res = defaultResHandler(ctx,err)
+    			ctx.JSON(res)
+			}
+		})
+
+		v1.Post("/set-user", func(ctx iris.Context) {
+			u := User{}
+			p := policySet{}
+			us := UserStatus{}
+
+			u.accessKey = ctx.FormValue("accessKey")
+			u.secretKey = ctx.FormValue("secretKey")
+			us.status = madmin.AccountStatus(ctx.FormValue("status"))
+			p.policyName = ctx.FormValue("policyName")
+			if u.secretKey == "" {
+				err = madmClnt.SetUserStatus(u.accessKey,us.status)
+			}else{
+				err = madmClnt.SetUser(u.accessKey,u.secretKey, us.status)
+			}
+			if err != nil {
+				log.Print(err)
+				ctx.JSON(iris.Map{"error": err.Error()})
+			} else {
+				if p.policyName == "" {
+					var res = defaultResHandler(ctx,err)
+					ctx.JSON(res)
+				} else {
+					err = madmClnt.SetPolicy(p.policyName,u.accessKey,false)
+					var res = defaultResHandler(ctx,err)
+					ctx.JSON(res)
+				}
+			}
 		})
 
 		v1.Get("/list-users", func(ctx iris.Context) {
@@ -207,28 +257,6 @@ func main() {
 			var res = bodyResHandler(ctx,err,lg)
 			ctx.JSON(res)
 		})
-
-		v1.Post("/create-user-extended", func(ctx iris.Context) {
-
-			p := policySet{}
-			p.policyName = ctx.FormValue("policyName")
-			p.entityName = ctx.FormValue("accessKey")
-
-			u := User{}
-			u.accessKey = ctx.FormValue("accessKey")
-			u.secretKey = ctx.FormValue("secretKey")
-
-    		err = madmClnt.AddUser(u.accessKey,u.secretKey)
-			if err != nil {
-				log.Print(err)
-				ctx.JSON(iris.Map{"error": err.Error()})
-			} else {
-				err = madmClnt.SetPolicy(p.policyName,p.entityName,false)
-				var res = defaultResHandler(ctx,err)
-    			ctx.JSON(res)
-			}
-		})
-
 
 		v1.Get("/list-policies", func(ctx iris.Context) {
 			lp, err := madmClnt.ListCannedPolicies()
