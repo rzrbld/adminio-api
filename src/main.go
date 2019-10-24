@@ -9,6 +9,7 @@ import (
 	madmin "github.com/minio/minio/pkg/madmin"
 	minio "github.com/minio/minio-go/v6"
 	strconv "strconv"
+	strings "strings"
 )
 
 type defaultRes struct {
@@ -60,9 +61,9 @@ func bodyResHandler(ctx iris.Context,err error,body interface{}) interface{} {
 
 
 func main() {
-	fmt.Println("\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            ")
-	fmt.Println("simple admin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.3 ")
+	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
+	fmt.Println("Admin REST API for http://min.io (minio) s3 server")
+	fmt.Println("version  : 0.4 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
 	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \r\n")
@@ -124,7 +125,47 @@ func main() {
 	
 	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions) // <- important for the preflight.
 	{
-	
+		
+
+		v1.Get("/list-groups", func(ctx iris.Context) {
+			st, err := madmClnt.ListGroups()
+			var res = bodyResHandler(ctx,err,st)
+			ctx.JSON(res)
+		})
+
+		v1.Post("/set-status-group", func(ctx iris.Context) {
+			var group = ctx.FormValue("group")
+			var status = madmin.GroupStatus(ctx.FormValue("status"))
+
+    		err = madmClnt.SetGroupStatus(group,status)
+			var res = defaultResHandler(ctx,err)
+    		ctx.JSON(res)
+		})
+
+		v1.Post("/get-description-group", func(ctx iris.Context) {
+			var group = ctx.FormValue("group")
+
+    		grp, err := madmClnt.GetGroupDescription(group)
+			var res = bodyResHandler(ctx,err,grp)
+    		ctx.JSON(res)
+		})
+
+		v1.Post("/update-members-group", func(ctx iris.Context) {
+			gar := madmin.GroupAddRemove{}
+			gar.Group = ctx.FormValue("group")
+			gar.Members = strings.Split(ctx.FormValue("members"), ",")
+
+			gar.IsRemove, err = strconv.ParseBool(ctx.FormValue("IsRemove"))
+			if err != nil {
+		  		log.Print(err)
+				ctx.JSON(iris.Map{"error": err.Error()})
+		  	}
+
+    		err = madmClnt.UpdateGroupMembers(gar)
+			var res = defaultResHandler(ctx,err)
+    		ctx.JSON(res)
+		})
+
 		v1.Post("/add-user", func(ctx iris.Context) {
 
 			// debug body
