@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	iris "github.com/rzrbld/iris"
+	iris "github.com/kataras/iris/v12"
 	"github.com/iris-contrib/middleware/cors"
 	log     "log"
 	madmin "github.com/minio/minio/pkg/madmin"

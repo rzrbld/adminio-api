@@ -10,10 +10,6 @@ ENV GOPROXY https://proxy.golang.org
 RUN  \
      apk add --no-cache git && \
      git clone https://github.com/minio/minio && cd minio/ && git checkout bd106408462ecef70debf51f1e6179de950c5812 && cd pkg/madmin/examples/ && \
-     go get github.com/rzrbld/iris && \
-     go get github.com/iris-contrib/middleware/cors && \
-     go get github.com/minio/minio/pkg/madmin && \
-     go get github.com/minio/minio-go/v6 && \
      git clone https://github.com/rzrbld/adminio-api && go build adminio-api/src/main.go && cp main /go/bin/adminio
 	
 FROM alpine:3.9
