@@ -2,63 +2,62 @@ package main
 
 import (
 	"fmt"
-	"os"
-	iris "github.com/kataras/iris/v12"
 	"github.com/iris-contrib/middleware/cors"
-	log     "log"
-	madmin "github.com/minio/minio/pkg/madmin"
+	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
+	madmin "github.com/minio/minio/pkg/madmin"
+	log "log"
+	"os"
 	strconv "strconv"
 	strings "strings"
 )
 
 type defaultRes struct {
-    Success string 
+	Success string
 }
 
 type User struct {
-	accessKey  string `json:"accessKey"` 
+	accessKey string `json:"accessKey"`
 	secretKey string `json:"secretKey"`
 }
 
 type policySet struct {
-	policyName  string `json:"policyName"` 
+	policyName string `json:"policyName"`
 	entityName string `json:"entityName"`
-	isGroup string `json:"isGroup"`
+	isGroup    string `json:"isGroup"`
 }
 
 type Policy struct {
-	policyName  string `json:"policyName"` 
+	policyName   string `json:"policyName"`
 	policyString string `json:"policyString"`
 }
 
 type UserStatus struct {
-	accessKey  string `json:"accessKey"` 
-	status madmin.AccountStatus `json:"status"`
+	accessKey string               `json:"accessKey"`
+	status    madmin.AccountStatus `json:"status"`
 }
 
-func defaultResHandler(ctx iris.Context,err error) iris.Map {
+func defaultResHandler(ctx iris.Context, err error) iris.Map {
 	var resp iris.Map
 	if err != nil {
 		log.Print(err)
 		resp = iris.Map{"error": err.Error()}
-	}else{
+	} else {
 		resp = iris.Map{"Success": "OK"}
 	}
 	return resp
 }
 
-func bodyResHandler(ctx iris.Context,err error,body interface{}) interface{} {
+func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
 	var resp interface{}
 	if err != nil {
 		log.Print(err)
 		resp = iris.Map{"error": err.Error()}
-	}else{
+	} else {
 		resp = body
 	}
 	return resp
 }
-
 
 func main() {
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
@@ -88,7 +87,7 @@ func main() {
 	region, exists := os.LookupEnv("MINIO_REGION")
 	if !exists {
 		region = "us-east-1"
-	}	
+	}
 
 	sslstr, exists := os.LookupEnv("MINIO_SSL")
 	if exists {
@@ -121,15 +120,13 @@ func main() {
 		AllowedOrigins:   []string{"*"}, // allows everything, use that to change the hosts.
 		AllowCredentials: true,
 	})
-    
-	
+
 	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions) // <- important for the preflight.
 	{
-		
 
 		v1.Get("/list-groups", func(ctx iris.Context) {
 			st, err := madmClnt.ListGroups()
-			var res = bodyResHandler(ctx,err,st)
+			var res = bodyResHandler(ctx, err, st)
 			ctx.JSON(res)
 		})
 
@@ -137,17 +134,17 @@ func main() {
 			var group = ctx.FormValue("group")
 			var status = madmin.GroupStatus(ctx.FormValue("status"))
 
-    		err = madmClnt.SetGroupStatus(group,status)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			err = madmClnt.SetGroupStatus(group, status)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 
 		v1.Post("/get-description-group", func(ctx iris.Context) {
 			var group = ctx.FormValue("group")
 
-    		grp, err := madmClnt.GetGroupDescription(group)
-			var res = bodyResHandler(ctx,err,grp)
-    		ctx.JSON(res)
+			grp, err := madmClnt.GetGroupDescription(group)
+			var res = bodyResHandler(ctx, err, grp)
+			ctx.JSON(res)
 		})
 
 		v1.Post("/update-members-group", func(ctx iris.Context) {
@@ -157,13 +154,13 @@ func main() {
 
 			gar.IsRemove, err = strconv.ParseBool(ctx.FormValue("IsRemove"))
 			if err != nil {
-		  		log.Print(err)
+				log.Print(err)
 				ctx.JSON(iris.Map{"error": err.Error()})
-		  	}
+			}
 
-    		err = madmClnt.UpdateGroupMembers(gar)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			err = madmClnt.UpdateGroupMembers(gar)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 
 		v1.Post("/add-user", func(ctx iris.Context) {
@@ -171,18 +168,18 @@ func main() {
 			// debug body
 			// rawBodyAsBytes, err := ioutil.ReadAll(ctx.Request().Body)
 			// if err != nil { /* handle the error */ ctx.Writef("%v", err) }
-			  
+
 			// rawBodyAsString := string(rawBodyAsBytes)
-			// println(rawBodyAsString) 
+			// println(rawBodyAsString)
 
 			user := User{}
 			user.accessKey = ctx.FormValue("accessKey")
 			user.secretKey = ctx.FormValue("secretKey")
 
-    		err = madmClnt.AddUser(user.accessKey,user.secretKey)
-    		var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
-			
+			err = madmClnt.AddUser(user.accessKey, user.secretKey)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
+
 		})
 
 		v1.Post("/create-user-extended", func(ctx iris.Context) {
@@ -195,14 +192,14 @@ func main() {
 			u.accessKey = ctx.FormValue("accessKey")
 			u.secretKey = ctx.FormValue("secretKey")
 
-    		err = madmClnt.AddUser(u.accessKey,u.secretKey)
+			err = madmClnt.AddUser(u.accessKey, u.secretKey)
 			if err != nil {
 				log.Print(err)
 				ctx.JSON(iris.Map{"error": err.Error()})
 			} else {
-				err = madmClnt.SetPolicy(p.policyName,p.entityName,false)
-				var res = defaultResHandler(ctx,err)
-    			ctx.JSON(res)
+				err = madmClnt.SetPolicy(p.policyName, p.entityName, false)
+				var res = defaultResHandler(ctx, err)
+				ctx.JSON(res)
 			}
 		})
 
@@ -216,20 +213,20 @@ func main() {
 			us.status = madmin.AccountStatus(ctx.FormValue("status"))
 			p.policyName = ctx.FormValue("policyName")
 			if u.secretKey == "" {
-				err = madmClnt.SetUserStatus(u.accessKey,us.status)
-			}else{
-				err = madmClnt.SetUser(u.accessKey,u.secretKey, us.status)
+				err = madmClnt.SetUserStatus(u.accessKey, us.status)
+			} else {
+				err = madmClnt.SetUser(u.accessKey, u.secretKey, us.status)
 			}
 			if err != nil {
 				log.Print(err)
 				ctx.JSON(iris.Map{"error": err.Error()})
 			} else {
 				if p.policyName == "" {
-					var res = defaultResHandler(ctx,err)
+					var res = defaultResHandler(ctx, err)
 					ctx.JSON(res)
 				} else {
-					err = madmClnt.SetPolicy(p.policyName,u.accessKey,false)
-					var res = defaultResHandler(ctx,err)
+					err = madmClnt.SetPolicy(p.policyName, u.accessKey, false)
+					var res = defaultResHandler(ctx, err)
 					ctx.JSON(res)
 				}
 			}
@@ -237,7 +234,7 @@ func main() {
 
 		v1.Get("/list-users", func(ctx iris.Context) {
 			st, err := madmClnt.ListUsers()
-			var res = bodyResHandler(ctx,err,st)
+			var res = bodyResHandler(ctx, err, st)
 			ctx.JSON(res)
 		})
 
@@ -246,62 +243,61 @@ func main() {
 			us.accessKey = ctx.FormValue("accessKey")
 			us.status = madmin.AccountStatus(ctx.FormValue("status"))
 
-    		err = madmClnt.SetUserStatus(us.accessKey,us.status)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			err = madmClnt.SetUserStatus(us.accessKey, us.status)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 
 		v1.Post("/delete-user", func(ctx iris.Context) {
 			user := User{}
 			user.accessKey = ctx.FormValue("accessKey")
 
-    		err = madmClnt.RemoveUser(user.accessKey)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			err = madmClnt.RemoveUser(user.accessKey)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 
 		v1.Post("/make-bucket", func(ctx iris.Context) {
 			var newBucket = ctx.FormValue("newBucket")
 			var newBucketRegion = ctx.FormValue("newBucketRegion")
-			if(newBucketRegion == ""){
+			if newBucketRegion == "" {
 				newBucketRegion = region
 			}
 
 			err = minioClnt.MakeBucket(newBucket, newBucketRegion)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 
 		v1.Get("/list-buckets", func(ctx iris.Context) {
 			lb, err := minioClnt.ListBuckets()
-			var res = bodyResHandler(ctx,err,lb)
+			var res = bodyResHandler(ctx, err, lb)
 			ctx.JSON(res)
 		})
 
 		v1.Post("/delete-bucket", func(ctx iris.Context) {
 			var bucketName = ctx.FormValue("bucketName")
-			
-			err := minioClnt.RemoveBucket(bucketName)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
-		})
 
+			err := minioClnt.RemoveBucket(bucketName)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
+		})
 
 		v1.Get("/server-info", func(ctx iris.Context) {
 			si, err := madmClnt.ServerInfo()
-			var res = bodyResHandler(ctx,err,si)
+			var res = bodyResHandler(ctx, err, si)
 			ctx.JSON(res)
 		})
 
 		v1.Get("/list-groups", func(ctx iris.Context) {
 			lg, err := madmClnt.ListGroups()
-			var res = bodyResHandler(ctx,err,lg)
+			var res = bodyResHandler(ctx, err, lg)
 			ctx.JSON(res)
 		})
 
 		v1.Get("/list-policies", func(ctx iris.Context) {
 			lp, err := madmClnt.ListCannedPolicies()
-			var res = bodyResHandler(ctx,err,lp)
+			var res = bodyResHandler(ctx, err, lp)
 			ctx.JSON(res)
 		})
 
@@ -310,18 +306,18 @@ func main() {
 			p.policyName = ctx.FormValue("policyName")
 			p.policyString = ctx.FormValue("policyString")
 
-			err = madmClnt.AddCannedPolicy(p.policyName,p.policyString)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			err = madmClnt.AddCannedPolicy(p.policyName, p.policyString)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
-		
+
 		v1.Post("/delete-policy", func(ctx iris.Context) {
 			p := policySet{}
 			p.policyName = ctx.FormValue("policyName")
 
 			err = madmClnt.RemoveCannedPolicy(p.policyName)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 
 		v1.Post("/set-policy", func(ctx iris.Context) {
@@ -331,18 +327,17 @@ func main() {
 			p.isGroup = ctx.FormValue("isGroup")
 
 			isGroupBool, err := strconv.ParseBool(p.isGroup)
-		  	if err != nil {
-		  		log.Print(err)
-				ctx.JSON(iris.Map{"error": err.Error()})
-		  	}
 
-    		err = madmClnt.SetPolicy(p.policyName,p.entityName,isGroupBool)
-			var res = defaultResHandler(ctx,err)
-    		ctx.JSON(res)
+			if err != nil {
+				log.Print(err)
+				ctx.JSON(iris.Map{"error": err.Error()})
+			}
+
+			err = madmClnt.SetPolicy(p.policyName, p.entityName, isGroupBool)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
 		})
 	}
 
 	app.Run(iris.Addr(serverHostPort))
 }
-
-
