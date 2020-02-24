@@ -31,3 +31,4 @@ after that you can go to `` http://localhost `` and try out
 | MINIO_REGION | set minio region | us-east-1 |
 | MINIO_ACCESS | set minio Access Key | test |
 | MINIO_SECRET | set minio Secret Key | testtest123 |
+| ADMINIO_CORS_DOMAIN | set adminio-api CORS policy domain  | * |

@@ -37,6 +37,19 @@ type UserStatus struct {
 	status    madmin.AccountStatus `json:"status"`
 }
 
+type bucketComplex struct {
+	bucket string
+	// bucketInfo minio.BucketInfo
+	// bucketEvents minio.BucketNotification
+}
+
+type candidate struct {
+	name       string
+	interests  []string
+	language   string
+	experience bool
+}
+
 func defaultResHandler(ctx iris.Context, err error) iris.Map {
 	var resp iris.Map
 	if err != nil {
@@ -61,11 +74,11 @@ func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
 
 func main() {
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
-	fmt.Println("Admin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.4 ")
+	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
+	fmt.Println("version  : 0.6 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
-	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \r\n")
+	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \033[m \r\n")
 
 	var ssl = false
 	//config
@@ -103,6 +116,11 @@ func main() {
 		serverHostPort = os.Getenv("API_HOST_PORT")
 	}
 
+	adminioCORS, exists := os.LookupEnv("ADMINIO_CORS_DOMAIN")
+	if !exists {
+		adminioCORS = "*"
+	}
+
 	// connect
 	madmClnt, err := madmin.New(server, maccess, msecret, ssl)
 	if err != nil {
@@ -117,7 +135,7 @@ func main() {
 	app := iris.New()
 
 	crs := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"}, // allows everything, use that to change the hosts.
+		AllowedOrigins:   []string{adminioCORS}, // allows everything, use that to change the hosts.
 		AllowCredentials: true,
 	})
 
@@ -269,6 +287,88 @@ func main() {
 			ctx.JSON(res)
 		})
 
+		v1.Post("/get-bucket-events", func(ctx iris.Context) {
+			var bucket = ctx.FormValue("bucket")
+			bn, err := minioClnt.GetBucketNotification(bucket)
+
+			var res = bodyResHandler(ctx, err, bn)
+			ctx.JSON(res)
+		})
+
+		v1.Post("/remove-bucket-events", func(ctx iris.Context) {
+			var bucket = ctx.FormValue("bucket")
+			err := minioClnt.RemoveAllBucketNotification(bucket)
+
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
+		})
+
+		v1.Post("/set-bucket-events", func(ctx iris.Context) {
+			var arrARN = strings.Split(ctx.FormValue("stsARN"), ":")
+
+			var stsARN = minio.NewArn(arrARN[1], arrARN[2], arrARN[3], arrARN[4], arrARN[5])
+
+			var bucket = ctx.FormValue("bucket")
+			var eventTypes = strings.Split(ctx.FormValue("eventTypes"), ",")
+			var filterPrefix = ctx.FormValue("filterPrefix")
+			var filterSuffix = ctx.FormValue("filterSuffix")
+
+			bucketNotify, err := minioClnt.GetBucketNotification(bucket)
+
+			var newNotification = minio.NewNotificationConfig(stsARN)
+			for _, event := range eventTypes {
+				switch event {
+				case "put":
+					newNotification.AddEvents(minio.ObjectCreatedAll)
+				case "delete":
+					newNotification.AddEvents(minio.ObjectRemovedAll)
+				case "get":
+					newNotification.AddEvents(minio.ObjectAccessedAll)
+				}
+			}
+			if filterPrefix != "" {
+				newNotification.AddFilterPrefix(filterPrefix)
+			}
+			if filterSuffix != "" {
+				newNotification.AddFilterSuffix(filterSuffix)
+			}
+
+			switch arrARN[2] {
+			case "sns":
+				if bucketNotify.AddTopic(newNotification) {
+					err = fmt.Errorf("Overlapping Topic configs")
+				}
+			case "sqs":
+				if bucketNotify.AddQueue(newNotification) {
+					err = fmt.Errorf("Overlapping Queue configs")
+				}
+			case "lambda":
+				if bucketNotify.AddLambda(newNotification) {
+					err = fmt.Errorf("Overlapping lambda configs")
+				}
+			}
+
+			err = minioClnt.SetBucketNotification(bucket, bucketNotify)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
+		})
+
+		v1.Get("/list-buckets-extended", func(ctx iris.Context) {
+			lb, err := minioClnt.ListBuckets()
+			allBuckets := []interface{}{}
+			for _, bucket := range lb {
+				bn, err := minioClnt.GetBucketNotification(bucket.Name)
+				if err != nil {
+					fmt.Errorf("Error while getting bucket notification")
+				}
+				br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn}
+				allBuckets = append(allBuckets, br)
+			}
+
+			var res = bodyResHandler(ctx, err, allBuckets)
+			ctx.JSON(res)
+		})
+
 		v1.Get("/list-buckets", func(ctx iris.Context) {
 			lb, err := minioClnt.ListBuckets()
 			var res = bodyResHandler(ctx, err, lb)
@@ -337,6 +437,15 @@ func main() {
 			var res = defaultResHandler(ctx, err)
 			ctx.JSON(res)
 		})
+
+		v1.Post("/get-kv", func(ctx iris.Context) {
+			var keyString = ctx.FormValue("keyString")
+
+			values, err := madmClnt.GetConfigKV(keyString)
+			var res = bodyResHandler(ctx, err, values)
+			ctx.JSON(res)
+		})
+
 	}
 
 	app.Run(iris.Addr(serverHostPort))

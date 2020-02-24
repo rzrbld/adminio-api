@@ -9,8 +9,11 @@ ENV GOPROXY https://proxy.golang.org
 
 RUN  \
      apk add --no-cache git && \
-     git clone https://github.com/minio/minio && cd minio/ && git checkout d4dcf1d7225a38ecf94abe7cbe7c69a93dc7c0b0 && cd pkg/madmin/examples/ && \
-     git clone https://github.com/rzrbld/adminio-api && go build adminio-api/src/main.go && cp main /go/bin/adminio
+     git clone https://github.com/minio/minio && cd minio/ && git checkout d4dcf1d7225a38ecf94abe7cbe7c69a93dc7c0b0 && cd pkg/madmin/examples/
+
+COPY src/main.go minio/pkg/madmin/examples/
+
+RUN  cd minio/pkg/madmin/examples && go build main.go && cp main /go/bin/adminio
 	
 FROM alpine:3.9
 
