@@ -75,7 +75,7 @@ func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
 func main() {
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
 	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.6 ")
+	fmt.Println("version  : 0.7 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
 	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \033[m \r\n")
@@ -386,6 +386,12 @@ func main() {
 		v1.Get("/server-info", func(ctx iris.Context) {
 			si, err := madmClnt.ServerInfo()
 			var res = bodyResHandler(ctx, err, si)
+			ctx.JSON(res)
+		})
+
+		v1.Get("/disk-info", func(ctx iris.Context) {
+			du, err := madmClnt.DataUsageInfo()
+			var res = bodyResHandler(ctx, err, du)
 			ctx.JSON(res)
 		})
 
