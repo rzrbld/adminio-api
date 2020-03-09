@@ -75,7 +75,7 @@ func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
 func main() {
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
 	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.7 ")
+	fmt.Println("version  : 0.8 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
 	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \033[m \r\n")
@@ -379,6 +379,23 @@ func main() {
 			var bucketName = ctx.FormValue("bucketName")
 
 			err := minioClnt.RemoveBucket(bucketName)
+			var res = defaultResHandler(ctx, err)
+			ctx.JSON(res)
+		})
+
+		v1.Post("/get-bucket-lifecycle", func(ctx iris.Context) {
+			var bucketName = ctx.FormValue("bucketName")
+
+			lc, err := minioClnt.GetBucketLifecycle(bucketName)
+			var res = bodyResHandler(ctx, err, lc)
+			ctx.JSON(res)
+		})
+
+		v1.Post("/set-bucket-lifecycle", func(ctx iris.Context) {
+			var bucketName = ctx.FormValue("bucketName")
+			var lifecycle = ctx.FormValue("lifecycle")
+
+			err := minioClnt.SetBucketLifecycle(bucketName, lifecycle)
 			var res = defaultResHandler(ctx, err)
 			ctx.JSON(res)
 		})
