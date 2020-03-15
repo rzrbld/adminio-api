@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/iris-contrib/middleware/cors"
 	iris "github.com/kataras/iris/v12"
@@ -10,7 +11,70 @@ import (
 	"os"
 	strconv "strconv"
 	strings "strings"
+
+	"github.com/kataras/iris/v12/sessions"
+
+	"github.com/gorilla/securecookie"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/amazon"
+	"github.com/markbates/goth/providers/auth0"
+	"github.com/markbates/goth/providers/bitbucket"
+	"github.com/markbates/goth/providers/box"
+	"github.com/markbates/goth/providers/digitalocean"
+	"github.com/markbates/goth/providers/dropbox"
+	"github.com/markbates/goth/providers/github"
+	"github.com/markbates/goth/providers/gitlab"
+	"github.com/markbates/goth/providers/heroku"
+	"github.com/markbates/goth/providers/onedrive"
+	"github.com/markbates/goth/providers/salesforce"
+	"github.com/markbates/goth/providers/slack"
 )
+
+var (
+	sessionsManager *sessions.Sessions
+	server          = getEnv("MINIO_HOST_PORT", "localhost:9000")
+	maccess         = getEnv("MINIO_ACCESS", "test")
+	msecret         = getEnv("MINIO_SECRET", "testtest123")
+	region          = getEnv("MINIO_REGION", "us-east-1")
+	ssl, _          = strconv.ParseBool(getEnv("MINIO_SSL", "false"))
+	serverHostPort  = getEnv("ADMINIO_HOST_PORT", "localhost:8080")
+	adminioCORS     = getEnv("ADMINIO_CORS_DOMAIN", "*")
+	// AES only supports key sizes of 16, 24 or 32 bytes.
+	// You either need to provide exactly that amount or you derive the key from what you type in.
+	scHashKey  = getEnv("ADMINIO_COOKIE_HASH_KEY", "NRUeuq6AdskNPa7ewZuxG9TrDZC4xFat")
+	scBlockKey = getEnv("ADMINIO_COOKIE_BLOCK_KEY", "bnfYuphzxPhJMR823YNezH83fuHuddFC")
+	// ---------------
+	scCookieName      = getEnv("ADMINIO_COOKIE_NAME", "adminiosessionid")
+	oauthEnable, _    = strconv.ParseBool(getEnv("ADMINIO_OAUTH_ENABLE", "false"))
+	auditLogEnable, _ = strconv.ParseBool(getEnv("ADMINIO_AUDIT_LOG_ENABLE", "false"))
+	oauthProvider     = getEnv("ADMINIO_OAUTH_PROVIDER", "github")
+	oauthClientId     = getEnv("ADMINIO_OAUTH_CLIENT_ID", "1111")
+	oauthClientSecret = getEnv("ADMINIO_OAUTH_CLIENT_SECRET", "22222")
+	oauthCallback     = getEnv("ADMINIO_OAUTH_CALLBACK", "http://"+serverHostPort+"/auth/callback")
+	oauthCustomDomain = getEnv("ADMINIO_OAUTH_CUSTOM_DOMAIN", "")
+)
+
+func getEnv(key, fallback string) string {
+	value, exist := os.LookupEnv(key)
+
+	if !exist {
+		return fallback
+	}
+	return value
+}
+
+func init() {
+	cookieName := scCookieName
+	hashKey := []byte(scHashKey)
+	blockKey := []byte(scBlockKey)
+	secureCookie := securecookie.New(hashKey, blockKey)
+
+	sessionsManager = sessions.New(sessions.Config{
+		Cookie: cookieName,
+		Encode: secureCookie.Encode,
+		Decode: secureCookie.Decode,
+	})
+}
 
 type defaultRes struct {
 	Success string
@@ -50,7 +114,112 @@ type candidate struct {
 	experience bool
 }
 
-func defaultResHandler(ctx iris.Context, err error) iris.Map {
+var GetProviderName = func(ctx iris.Context) (string, error) {
+	return oauthProvider, nil
+}
+
+func BeginAuthHandler(ctx iris.Context) {
+	url, err := GetAuthURL(ctx)
+	if err != nil {
+		ctx.StatusCode(iris.StatusBadRequest)
+		ctx.Writef("%v", err)
+		return
+	}
+
+	ctx.Redirect(url, iris.StatusTemporaryRedirect)
+}
+
+func redirectOnCallback(ctx iris.Context) {
+	url := GetState(ctx)
+	ctx.Redirect(url, iris.StatusTemporaryRedirect)
+}
+
+func GetAuthURL(ctx iris.Context) (string, error) {
+	providerName, err := GetProviderName(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	provider, err := goth.GetProvider(providerName)
+	if err != nil {
+		return "", err
+	}
+	sess, err := provider.BeginAuth(SetState(ctx))
+	if err != nil {
+		return "", err
+	}
+
+	url, err := sess.GetAuthURL()
+	if err != nil {
+		return "", err
+	}
+	session := sessionsManager.Start(ctx)
+	session.Set(providerName, sess.Marshal())
+	return url, nil
+}
+
+var SetState = func(ctx iris.Context) string {
+	state := ctx.URLParam("state")
+	if len(state) > 0 {
+		return state
+	}
+
+	return "state"
+}
+
+var GetState = func(ctx iris.Context) string {
+	return ctx.URLParam("state")
+}
+
+var CompleteUserAuth = func(ctx iris.Context) (goth.User, error) {
+	providerName, err := GetProviderName(ctx)
+	if err != nil {
+		return goth.User{}, err
+	}
+
+	provider, err := goth.GetProvider(providerName)
+	if err != nil {
+		return goth.User{}, err
+	}
+	session := sessionsManager.Start(ctx)
+	value := session.GetString(providerName)
+
+	if value == "" {
+		return goth.User{}, errors.New("session value for " + providerName + " not found")
+	}
+
+	sess, err := provider.UnmarshalSession(value)
+	if err != nil {
+		return goth.User{}, err
+	}
+
+	user, err := provider.FetchUser(sess)
+	if err == nil {
+		// user can be found with existing session data
+		return user, err
+	}
+
+	// get new token and retry fetch
+	_, err = sess.Authorize(provider, ctx.Request().URL.Query())
+	if err != nil {
+		return goth.User{}, err
+	}
+
+	session.Set(providerName, sess.Marshal())
+	return provider.FetchUser(sess)
+}
+
+func Logout(ctx iris.Context) error {
+	providerName, err := GetProviderName(ctx)
+	if err != nil {
+		return err
+	}
+	session := sessionsManager.Start(ctx)
+	session.Delete(providerName)
+	return nil
+}
+
+func defaultResConstructor(ctx iris.Context, err error) iris.Map {
 	var resp iris.Map
 	if err != nil {
 		log.Print(err)
@@ -61,7 +230,7 @@ func defaultResHandler(ctx iris.Context, err error) iris.Map {
 	return resp
 }
 
-func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
+func bodyResConstructor(ctx iris.Context, err error, body interface{}) interface{} {
 	var resp interface{}
 	if err != nil {
 		log.Print(err)
@@ -72,54 +241,62 @@ func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
 	return resp
 }
 
+func defaultResHandler(ctx iris.Context, err error) iris.Map {
+	if oauthEnable {
+		if gothUser, err := CompleteUserAuth(ctx); err == nil {
+			defaultAuditLog(gothUser, ctx)
+			return defaultResConstructor(ctx, err)
+		} else {
+			return iris.Map{"auth": false, "oauth": oauthEnable}
+		}
+	} else {
+		return defaultResConstructor(ctx, err)
+	}
+
+	return nil
+}
+
+func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
+	if oauthEnable {
+		if gothUser, err := CompleteUserAuth(ctx); err == nil {
+			defaultAuditLog(gothUser, ctx)
+			return bodyResConstructor(ctx, err, body)
+		} else {
+			return iris.Map{"auth": false, "oauth": oauthEnable}
+		}
+	} else {
+		return bodyResConstructor(ctx, err, body)
+	}
+	return nil
+}
+
+func defaultAuditLog(user goth.User, ctx iris.Context) {
+	ctx.ViewData("", user)
+	log.Print("user: ", user.NickName, "; method:", ctx.RouteName())
+}
+
 func main() {
+	goth.UseProviders(
+		github.New(oauthClientId, oauthClientSecret, oauthCallback),
+		dropbox.New(oauthClientId, oauthClientSecret, oauthCallback),
+		digitalocean.New(oauthClientId, oauthClientSecret, oauthCallback),
+		bitbucket.New(oauthClientId, oauthClientSecret, oauthCallback),
+		box.New(oauthClientId, oauthClientSecret, oauthCallback),
+		salesforce.New(oauthClientId, oauthClientSecret, oauthCallback),
+		amazon.New(oauthClientId, oauthClientSecret, oauthCallback),
+		onedrive.New(oauthClientId, oauthClientSecret, oauthCallback),
+		slack.New(oauthClientId, oauthClientSecret, oauthCallback),
+		heroku.New(oauthClientId, oauthClientSecret, oauthCallback),
+		gitlab.New(oauthClientId, oauthClientSecret, oauthCallback),
+		auth0.New(oauthClientId, oauthClientSecret, oauthCallback, oauthCustomDomain),
+	)
+
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
 	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.8 ")
+	fmt.Println("version  : 0.9 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
 	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \033[m \r\n")
-
-	var ssl = false
-	//config
-	server, exists := os.LookupEnv("MINIO_HOST_PORT")
-	if !exists {
-		server = "localhost:9000"
-	}
-
-	maccess, exists := os.LookupEnv("MINIO_ACCESS")
-	if !exists {
-		maccess = "test"
-	}
-
-	msecret, exists := os.LookupEnv("MINIO_SECRET")
-	if !exists {
-		msecret = "testtest123"
-	}
-
-	region, exists := os.LookupEnv("MINIO_REGION")
-	if !exists {
-		region = "us-east-1"
-	}
-
-	sslstr, exists := os.LookupEnv("MINIO_SSL")
-	if exists {
-		sslbool, err := strconv.ParseBool(sslstr)
-		if err != nil {
-			log.Print(err)
-		}
-		ssl = sslbool
-	}
-
-	serverHostPort, exists := os.LookupEnv("API_HOST_PORT")
-	if !exists {
-		serverHostPort = os.Getenv("API_HOST_PORT")
-	}
-
-	adminioCORS, exists := os.LookupEnv("ADMINIO_CORS_DOMAIN")
-	if !exists {
-		adminioCORS = "*"
-	}
 
 	// connect
 	madmClnt, err := madmin.New(server, maccess, msecret, ssl)
@@ -139,12 +316,52 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions) // <- important for the preflight.
+	v1auth := app.Party("/auth/", crs).AllowMethods(iris.MethodOptions)
+	{
+		v1auth.Get("/logout/", func(ctx iris.Context) {
+			Logout(ctx)
+			ctx.Redirect("/", iris.StatusTemporaryRedirect)
+		})
+
+		v1auth.Get("/", func(ctx iris.Context) {
+			// try to get the user without re-authenticating
+			if gothUser, err := CompleteUserAuth(ctx); err == nil {
+				ctx.ViewData("", gothUser)
+				ctx.JSON(iris.Map{"name": gothUser.NickName, "auth": true, "oauth": oauthEnable})
+			} else {
+				BeginAuthHandler(ctx)
+			}
+		})
+
+		v1auth.Get("/check", func(ctx iris.Context) {
+			// try to get the user without re-authenticating
+			if gothUser, err := CompleteUserAuth(ctx); err == nil {
+				ctx.ViewData("", gothUser)
+				ctx.JSON(iris.Map{"name": gothUser.NickName, "auth": true, "oauth": oauthEnable})
+			} else {
+				ctx.JSON(iris.Map{"auth": false, "oauth": oauthEnable})
+			}
+		})
+
+		v1auth.Get("/callback", func(ctx iris.Context) {
+			_, err := CompleteUserAuth(ctx)
+			if err != nil {
+				ctx.StatusCode(iris.StatusInternalServerError)
+				ctx.Writef("%v", err)
+				return
+			}
+			// ctx.ViewData("", user)
+			redirectOnCallback(ctx)
+			// ctx.JSON(iris.Map{"name": user.NickName, "auth":true, "oauth":oauthEnable})
+		})
+	}
+
+	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions)
 	{
 
-		v1.Get("/list-groups", func(ctx iris.Context) {
-			st, err := madmClnt.ListGroups()
-			var res = bodyResHandler(ctx, err, st)
+		v1.Get("/list-buckets", func(ctx iris.Context) {
+			lb, err := minioClnt.ListBuckets()
+			var res = bodyResHandler(ctx, err, lb)
 			ctx.JSON(res)
 		})
 
@@ -366,12 +583,6 @@ func main() {
 			}
 
 			var res = bodyResHandler(ctx, err, allBuckets)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/list-buckets", func(ctx iris.Context) {
-			lb, err := minioClnt.ListBuckets()
-			var res = bodyResHandler(ctx, err, lb)
 			ctx.JSON(res)
 		})
 
