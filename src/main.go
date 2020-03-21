@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/iris-contrib/middleware/cors"
+	prometheusMiddleware "github.com/iris-contrib/middleware/prometheus"
 	iris "github.com/kataras/iris/v12"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/amazon"
@@ -17,6 +19,7 @@ import (
 	"github.com/markbates/goth/providers/onedrive"
 	"github.com/markbates/goth/providers/salesforce"
 	"github.com/markbates/goth/providers/slack"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rzrbld/goth-provider-wso2"
 
 	cnf "github.com/rzrbld/adminio-api/config"
@@ -53,6 +56,14 @@ func main() {
 		AllowedOrigins:   []string{cnf.AdminioCORS}, // allows everything, use that to change the hosts.
 		AllowCredentials: true,
 	})
+
+	// prometheus default metrics
+	if cnf.MetricsEnable {
+		m := prometheusMiddleware.New("adminio", 0.3, 1.2, 5.0)
+		hdl.RecordMetrics()
+		app.Use(m.ServeHTTP)
+		app.Get("/metrics", iris.FromStd(promhttp.Handler()))
+	}
 
 	v1auth := app.Party("/auth/", crs).AllowMethods(iris.MethodOptions)
 	{
