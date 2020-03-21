@@ -57,7 +57,7 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	// prometheus default metrics
+	// prometheus metrics
 	if cnf.MetricsEnable {
 		m := prometheusMiddleware.New("adminio", 0.3, 1.2, 5.0)
 		hdl.RecordMetrics()
