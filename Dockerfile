@@ -9,7 +9,7 @@ ENV GOPROXY https://proxy.golang.org
 
 RUN  \
      apk add --no-cache git && \
-     git clone https://github.com/rzrbld/adminio-api && go build adminio-api/src/main.go && cp main /go/bin/adminio
+     git clone https://github.com/rzrbld/adminio-api && cd adminio-api/src/ && go build main.go && cp main /go/bin/adminio
 
 FROM alpine:3.11
 
