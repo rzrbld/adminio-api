@@ -2,474 +2,149 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/iris-contrib/middleware/cors"
+	prometheusMiddleware "github.com/iris-contrib/middleware/prometheus"
 	iris "github.com/kataras/iris/v12"
-	minio "github.com/minio/minio-go/v6"
-	madmin "github.com/minio/minio/pkg/madmin"
-	log "log"
-	"os"
-	strconv "strconv"
-	strings "strings"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/amazon"
+	"github.com/markbates/goth/providers/auth0"
+	"github.com/markbates/goth/providers/bitbucket"
+	"github.com/markbates/goth/providers/box"
+	"github.com/markbates/goth/providers/digitalocean"
+	"github.com/markbates/goth/providers/dropbox"
+	"github.com/markbates/goth/providers/github"
+	"github.com/markbates/goth/providers/gitlab"
+	"github.com/markbates/goth/providers/heroku"
+	"github.com/markbates/goth/providers/onedrive"
+	"github.com/markbates/goth/providers/salesforce"
+	"github.com/markbates/goth/providers/slack"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rzrbld/goth-provider-wso2"
+
+	cnf "github.com/rzrbld/adminio-api/config"
+	hdl "github.com/rzrbld/adminio-api/handlers"
 )
 
-type defaultRes struct {
-	Success string
-}
-
-type User struct {
-	accessKey string `json:"accessKey"`
-	secretKey string `json:"secretKey"`
-}
-
-type policySet struct {
-	policyName string `json:"policyName"`
-	entityName string `json:"entityName"`
-	isGroup    string `json:"isGroup"`
-}
-
-type Policy struct {
-	policyName   string `json:"policyName"`
-	policyString string `json:"policyString"`
-}
-
-type UserStatus struct {
-	accessKey string               `json:"accessKey"`
-	status    madmin.AccountStatus `json:"status"`
-}
-
-type bucketComplex struct {
-	bucket string
-	// bucketInfo minio.BucketInfo
-	// bucketEvents minio.BucketNotification
-}
-
-type candidate struct {
-	name       string
-	interests  []string
-	language   string
-	experience bool
-}
-
-func defaultResHandler(ctx iris.Context, err error) iris.Map {
-	var resp iris.Map
-	if err != nil {
-		log.Print(err)
-		resp = iris.Map{"error": err.Error()}
-	} else {
-		resp = iris.Map{"Success": "OK"}
-	}
-	return resp
-}
-
-func bodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
-	var resp interface{}
-	if err != nil {
-		log.Print(err)
-		resp = iris.Map{"error": err.Error()}
-	} else {
-		resp = body
-	}
-	return resp
-}
-
 func main() {
+	goth.UseProviders(
+		github.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		dropbox.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		digitalocean.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		bitbucket.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		box.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		salesforce.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		amazon.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		onedrive.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		slack.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		heroku.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		gitlab.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
+		auth0.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback, cnf.OauthCustomDomain),
+		wso2.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback, cnf.OauthCustomDomain),
+	)
+
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
 	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("version  : 0.8 ")
+	fmt.Println("version  : 0.9 ")
 	fmt.Println("Author   : rzrbld")
 	fmt.Println("License  : MIT")
 	fmt.Println("Git-repo : https://github.com/rzrbld/adminio \033[m \r\n")
 
-	var ssl = false
-	//config
-	server, exists := os.LookupEnv("MINIO_HOST_PORT")
-	if !exists {
-		server = "localhost:9000"
-	}
-
-	maccess, exists := os.LookupEnv("MINIO_ACCESS")
-	if !exists {
-		maccess = "test"
-	}
-
-	msecret, exists := os.LookupEnv("MINIO_SECRET")
-	if !exists {
-		msecret = "testtest123"
-	}
-
-	region, exists := os.LookupEnv("MINIO_REGION")
-	if !exists {
-		region = "us-east-1"
-	}
-
-	sslstr, exists := os.LookupEnv("MINIO_SSL")
-	if exists {
-		sslbool, err := strconv.ParseBool(sslstr)
-		if err != nil {
-			log.Print(err)
-		}
-		ssl = sslbool
-	}
-
-	serverHostPort, exists := os.LookupEnv("API_HOST_PORT")
-	if !exists {
-		serverHostPort = os.Getenv("API_HOST_PORT")
-	}
-
-	adminioCORS, exists := os.LookupEnv("ADMINIO_CORS_DOMAIN")
-	if !exists {
-		adminioCORS = "*"
-	}
-
-	// connect
-	madmClnt, err := madmin.New(server, maccess, msecret, ssl)
-	if err != nil {
-		log.Print(err)
-	}
-
-	minioClnt, err := minio.New(server, maccess, msecret, ssl)
-	if err != nil {
-		log.Print(err)
-	}
-
 	app := iris.New()
 
 	crs := cors.New(cors.Options{
-		AllowedOrigins:   []string{adminioCORS}, // allows everything, use that to change the hosts.
+		AllowedOrigins:   []string{cnf.AdminioCORS}, // allows everything, use that to change the hosts.
 		AllowCredentials: true,
 	})
 
-	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions) // <- important for the preflight.
-	{
-
-		v1.Get("/list-groups", func(ctx iris.Context) {
-			st, err := madmClnt.ListGroups()
-			var res = bodyResHandler(ctx, err, st)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/set-status-group", func(ctx iris.Context) {
-			var group = ctx.FormValue("group")
-			var status = madmin.GroupStatus(ctx.FormValue("status"))
-
-			err = madmClnt.SetGroupStatus(group, status)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/get-description-group", func(ctx iris.Context) {
-			var group = ctx.FormValue("group")
-
-			grp, err := madmClnt.GetGroupDescription(group)
-			var res = bodyResHandler(ctx, err, grp)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/update-members-group", func(ctx iris.Context) {
-			gar := madmin.GroupAddRemove{}
-			gar.Group = ctx.FormValue("group")
-			gar.Members = strings.Split(ctx.FormValue("members"), ",")
-
-			gar.IsRemove, err = strconv.ParseBool(ctx.FormValue("IsRemove"))
-			if err != nil {
-				log.Print(err)
-				ctx.JSON(iris.Map{"error": err.Error()})
-			}
-
-			err = madmClnt.UpdateGroupMembers(gar)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/add-user", func(ctx iris.Context) {
-
-			// debug body
-			// rawBodyAsBytes, err := ioutil.ReadAll(ctx.Request().Body)
-			// if err != nil { /* handle the error */ ctx.Writef("%v", err) }
-
-			// rawBodyAsString := string(rawBodyAsBytes)
-			// println(rawBodyAsString)
-
-			user := User{}
-			user.accessKey = ctx.FormValue("accessKey")
-			user.secretKey = ctx.FormValue("secretKey")
-
-			err = madmClnt.AddUser(user.accessKey, user.secretKey)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-
-		})
-
-		v1.Post("/create-user-extended", func(ctx iris.Context) {
-
-			p := policySet{}
-			p.policyName = ctx.FormValue("policyName")
-			p.entityName = ctx.FormValue("accessKey")
-
-			u := User{}
-			u.accessKey = ctx.FormValue("accessKey")
-			u.secretKey = ctx.FormValue("secretKey")
-
-			err = madmClnt.AddUser(u.accessKey, u.secretKey)
-			if err != nil {
-				log.Print(err)
-				ctx.JSON(iris.Map{"error": err.Error()})
-			} else {
-				err = madmClnt.SetPolicy(p.policyName, p.entityName, false)
-				var res = defaultResHandler(ctx, err)
-				ctx.JSON(res)
-			}
-		})
-
-		v1.Post("/set-user", func(ctx iris.Context) {
-			u := User{}
-			p := policySet{}
-			us := UserStatus{}
-
-			u.accessKey = ctx.FormValue("accessKey")
-			u.secretKey = ctx.FormValue("secretKey")
-			us.status = madmin.AccountStatus(ctx.FormValue("status"))
-			p.policyName = ctx.FormValue("policyName")
-			if u.secretKey == "" {
-				err = madmClnt.SetUserStatus(u.accessKey, us.status)
-			} else {
-				err = madmClnt.SetUser(u.accessKey, u.secretKey, us.status)
-			}
-			if err != nil {
-				log.Print(err)
-				ctx.JSON(iris.Map{"error": err.Error()})
-			} else {
-				if p.policyName == "" {
-					var res = defaultResHandler(ctx, err)
-					ctx.JSON(res)
-				} else {
-					err = madmClnt.SetPolicy(p.policyName, u.accessKey, false)
-					var res = defaultResHandler(ctx, err)
-					ctx.JSON(res)
-				}
-			}
-		})
-
-		v1.Get("/list-users", func(ctx iris.Context) {
-			st, err := madmClnt.ListUsers()
-			var res = bodyResHandler(ctx, err, st)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/set-status-user", func(ctx iris.Context) {
-			us := UserStatus{}
-			us.accessKey = ctx.FormValue("accessKey")
-			us.status = madmin.AccountStatus(ctx.FormValue("status"))
-
-			err = madmClnt.SetUserStatus(us.accessKey, us.status)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/delete-user", func(ctx iris.Context) {
-			user := User{}
-			user.accessKey = ctx.FormValue("accessKey")
-
-			err = madmClnt.RemoveUser(user.accessKey)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/make-bucket", func(ctx iris.Context) {
-			var newBucket = ctx.FormValue("newBucket")
-			var newBucketRegion = ctx.FormValue("newBucketRegion")
-			if newBucketRegion == "" {
-				newBucketRegion = region
-			}
-
-			err = minioClnt.MakeBucket(newBucket, newBucketRegion)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/get-bucket-events", func(ctx iris.Context) {
-			var bucket = ctx.FormValue("bucket")
-			bn, err := minioClnt.GetBucketNotification(bucket)
-
-			var res = bodyResHandler(ctx, err, bn)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/remove-bucket-events", func(ctx iris.Context) {
-			var bucket = ctx.FormValue("bucket")
-			err := minioClnt.RemoveAllBucketNotification(bucket)
-
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/set-bucket-events", func(ctx iris.Context) {
-			var arrARN = strings.Split(ctx.FormValue("stsARN"), ":")
-
-			var stsARN = minio.NewArn(arrARN[1], arrARN[2], arrARN[3], arrARN[4], arrARN[5])
-
-			var bucket = ctx.FormValue("bucket")
-			var eventTypes = strings.Split(ctx.FormValue("eventTypes"), ",")
-			var filterPrefix = ctx.FormValue("filterPrefix")
-			var filterSuffix = ctx.FormValue("filterSuffix")
-
-			bucketNotify, err := minioClnt.GetBucketNotification(bucket)
-
-			var newNotification = minio.NewNotificationConfig(stsARN)
-			for _, event := range eventTypes {
-				switch event {
-				case "put":
-					newNotification.AddEvents(minio.ObjectCreatedAll)
-				case "delete":
-					newNotification.AddEvents(minio.ObjectRemovedAll)
-				case "get":
-					newNotification.AddEvents(minio.ObjectAccessedAll)
-				}
-			}
-			if filterPrefix != "" {
-				newNotification.AddFilterPrefix(filterPrefix)
-			}
-			if filterSuffix != "" {
-				newNotification.AddFilterSuffix(filterSuffix)
-			}
-
-			switch arrARN[2] {
-			case "sns":
-				if bucketNotify.AddTopic(newNotification) {
-					err = fmt.Errorf("Overlapping Topic configs")
-				}
-			case "sqs":
-				if bucketNotify.AddQueue(newNotification) {
-					err = fmt.Errorf("Overlapping Queue configs")
-				}
-			case "lambda":
-				if bucketNotify.AddLambda(newNotification) {
-					err = fmt.Errorf("Overlapping lambda configs")
-				}
-			}
-
-			err = minioClnt.SetBucketNotification(bucket, bucketNotify)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/list-buckets-extended", func(ctx iris.Context) {
-			lb, err := minioClnt.ListBuckets()
-			allBuckets := []interface{}{}
-			for _, bucket := range lb {
-				bn, err := minioClnt.GetBucketNotification(bucket.Name)
-				if err != nil {
-					fmt.Errorf("Error while getting bucket notification")
-				}
-				br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn}
-				allBuckets = append(allBuckets, br)
-			}
-
-			var res = bodyResHandler(ctx, err, allBuckets)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/list-buckets", func(ctx iris.Context) {
-			lb, err := minioClnt.ListBuckets()
-			var res = bodyResHandler(ctx, err, lb)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/delete-bucket", func(ctx iris.Context) {
-			var bucketName = ctx.FormValue("bucketName")
-
-			err := minioClnt.RemoveBucket(bucketName)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/get-bucket-lifecycle", func(ctx iris.Context) {
-			var bucketName = ctx.FormValue("bucketName")
-
-			lc, err := minioClnt.GetBucketLifecycle(bucketName)
-			var res = bodyResHandler(ctx, err, lc)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/set-bucket-lifecycle", func(ctx iris.Context) {
-			var bucketName = ctx.FormValue("bucketName")
-			var lifecycle = ctx.FormValue("lifecycle")
-
-			err := minioClnt.SetBucketLifecycle(bucketName, lifecycle)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/server-info", func(ctx iris.Context) {
-			si, err := madmClnt.ServerInfo()
-			var res = bodyResHandler(ctx, err, si)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/disk-info", func(ctx iris.Context) {
-			du, err := madmClnt.DataUsageInfo()
-			var res = bodyResHandler(ctx, err, du)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/list-groups", func(ctx iris.Context) {
-			lg, err := madmClnt.ListGroups()
-			var res = bodyResHandler(ctx, err, lg)
-			ctx.JSON(res)
-		})
-
-		v1.Get("/list-policies", func(ctx iris.Context) {
-			lp, err := madmClnt.ListCannedPolicies()
-			var res = bodyResHandler(ctx, err, lp)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/add-policy", func(ctx iris.Context) {
-			p := Policy{}
-			p.policyName = ctx.FormValue("policyName")
-			p.policyString = ctx.FormValue("policyString")
-
-			err = madmClnt.AddCannedPolicy(p.policyName, p.policyString)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/delete-policy", func(ctx iris.Context) {
-			p := policySet{}
-			p.policyName = ctx.FormValue("policyName")
-
-			err = madmClnt.RemoveCannedPolicy(p.policyName)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/set-policy", func(ctx iris.Context) {
-			p := policySet{}
-			p.policyName = ctx.FormValue("policyName")
-			p.entityName = ctx.FormValue("entityName")
-			p.isGroup = ctx.FormValue("isGroup")
-
-			isGroupBool, err := strconv.ParseBool(p.isGroup)
-
-			if err != nil {
-				log.Print(err)
-				ctx.JSON(iris.Map{"error": err.Error()})
-			}
-
-			err = madmClnt.SetPolicy(p.policyName, p.entityName, isGroupBool)
-			var res = defaultResHandler(ctx, err)
-			ctx.JSON(res)
-		})
-
-		v1.Post("/get-kv", func(ctx iris.Context) {
-			var keyString = ctx.FormValue("keyString")
-
-			values, err := madmClnt.GetConfigKV(keyString)
-			var res = bodyResHandler(ctx, err, values)
-			ctx.JSON(res)
-		})
-
+	// prometheus metrics
+	if cnf.MetricsEnable {
+		m := prometheusMiddleware.New("adminio", 0.3, 1.2, 5.0)
+		hdl.RecordMetrics()
+		app.Use(m.ServeHTTP)
+		app.Get("/metrics", iris.FromStd(promhttp.Handler()))
 	}
 
-	app.Run(iris.Addr(serverHostPort))
+	v1auth := app.Party("/auth/", crs).AllowMethods(iris.MethodOptions)
+	{
+		v1auth.Get("/logout/", hdl.AuthLogout)
+		v1auth.Get("/", hdl.AuthRoot)
+		v1auth.Get("/check", hdl.AuthCheck)
+		v1auth.Get("/callback", hdl.AuthCallback)
+	}
+
+	//deprecated, will be removed
+	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions)
+	{
+		v1.Get("/list-buckets", hdl.BuckList)
+		v1.Post("/make-bucket", hdl.BuckMake)
+		v1.Get("/list-buckets-extended", hdl.BuckListExtended)
+		v1.Post("/delete-bucket", hdl.BuckDelete)
+		v1.Post("/get-bucket-lifecycle", hdl.BuckGetLifecycle)
+		v1.Post("/set-bucket-lifecycle", hdl.BuckSetLifecycle)
+		v1.Post("/get-bucket-events", hdl.BuckGetEvents)
+		v1.Post("/set-bucket-events", hdl.BuckSetEvents)
+		v1.Post("/remove-bucket-events", hdl.BuckRemoveEvents)
+
+		v1.Get("/list-users", hdl.UsrList)
+		v1.Post("/set-status-user", hdl.UsrSetStats)
+		v1.Post("/delete-user", hdl.UsrDelete)
+		v1.Post("/add-user", hdl.UsrAdd)
+		v1.Post("/create-user-extended", hdl.UsrCreateExtended)
+		v1.Post("/set-user", hdl.UsrSet)
+
+		v1.Get("/list-policies", hdl.PolList)
+		v1.Post("/add-policy", hdl.PolAdd)
+		v1.Post("/delete-policy", hdl.PolDelete)
+		v1.Post("/set-policy", hdl.PolSet)
+
+		v1.Post("/set-status-group", hdl.GrSetStatus)
+		v1.Post("/get-description-group", hdl.GrSetDescription)
+		v1.Post("/update-members-group", hdl.GrUpdateMembers)
+		v1.Get("/list-groups", hdl.GrList)
+
+		v1.Get("/server-info", hdl.ServerInfo)
+		v1.Get("/disk-info", hdl.DiskInfo)
+
+		v1.Post("/get-kv", hdl.KvGet)
+
+	}
+	// -------------------------------------------
+
+	v2 := app.Party("/api/v2", crs).AllowMethods(iris.MethodOptions)
+	{
+		v2.Get("/buckets/list", hdl.BuckList)
+		v2.Post("/bucket/create", hdl.BuckMake)
+		v2.Get("/buckets/list-extended", hdl.BuckListExtended)
+		v2.Post("/bucket/delete", hdl.BuckDelete)
+		v2.Post("/bucket/get-lifecycle", hdl.BuckGetLifecycle)
+		v2.Post("/bucket/set-lifecycle", hdl.BuckSetLifecycle)
+		v2.Post("/bucket/get-events", hdl.BuckGetEvents)
+		v2.Post("/bucket/set-events", hdl.BuckSetEvents)
+		v2.Post("/bucket/remove-events", hdl.BuckRemoveEvents)
+
+		v2.Get("/users/list", hdl.UsrList)
+		v2.Post("/user/set-status", hdl.UsrSetStats)
+		v2.Post("/user/delete", hdl.UsrDelete)
+		v2.Post("/user/create", hdl.UsrAdd)
+		v2.Post("/user/create-extended", hdl.UsrCreateExtended)
+		v2.Post("/user/update", hdl.UsrSet)
+
+		v2.Get("/policies/list", hdl.PolList)
+		v2.Post("/policy/create", hdl.PolAdd)
+		v2.Post("/policy/delete", hdl.PolDelete)
+		v2.Post("/policy/update", hdl.PolSet)
+
+		v2.Post("/group/set-status", hdl.GrSetStatus)
+		v2.Post("/group/get-description", hdl.GrSetDescription)
+		v2.Post("/group/update-members", hdl.GrUpdateMembers)
+		v2.Get("/groups/list", hdl.GrList)
+
+		v2.Get("/server/common-info", hdl.ServerInfo)
+		v2.Get("/server/disk-info", hdl.DiskInfo)
+
+		v2.Post("/kv/get", hdl.KvGet)
+	}
+
+	app.Run(iris.Addr(cnf.ServerHostPort))
 }

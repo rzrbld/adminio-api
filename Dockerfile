@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine
+FROM golang:1.14-alpine
 
 LABEL maintainer="rzrbld <razblade@gmail.com>"
 
@@ -9,10 +9,9 @@ ENV GOPROXY https://proxy.golang.org
 
 RUN  \
      apk add --no-cache git && \
-     git clone https://github.com/minio/minio && cd minio/ && git checkout d4dcf1d7225a38ecf94abe7cbe7c69a93dc7c0b0 && cd pkg/madmin/examples/ && \
      git clone https://github.com/rzrbld/adminio-api && go build adminio-api/src/main.go && cp main /go/bin/adminio
-	
-FROM alpine:3.9
+
+FROM alpine:3.11
 
 EXPOSE 8080
 
