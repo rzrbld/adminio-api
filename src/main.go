@@ -17,15 +17,10 @@ import (
 	"github.com/markbates/goth/providers/onedrive"
 	"github.com/markbates/goth/providers/salesforce"
 	"github.com/markbates/goth/providers/slack"
+	"github.com/rzrbld/goth-provider-wso2"
 
 	cnf "github.com/rzrbld/adminio-api/config"
-	authh "github.com/rzrbld/adminio-api/handlers-auth"
-	bcth "github.com/rzrbld/adminio-api/handlers-bucket"
-	kvh "github.com/rzrbld/adminio-api/handlers-config"
-	grph "github.com/rzrbld/adminio-api/handlers-groups"
-	plch "github.com/rzrbld/adminio-api/handlers-policy"
-	srvh "github.com/rzrbld/adminio-api/handlers-server"
-	usrh "github.com/rzrbld/adminio-api/handlers-users"
+	hdl "github.com/rzrbld/adminio-api/handlers"
 )
 
 func main() {
@@ -42,6 +37,7 @@ func main() {
 		heroku.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
 		gitlab.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback),
 		auth0.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback, cnf.OauthCustomDomain),
+		wso2.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback, cnf.OauthCustomDomain),
 	)
 
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
@@ -60,46 +56,83 @@ func main() {
 
 	v1auth := app.Party("/auth/", crs).AllowMethods(iris.MethodOptions)
 	{
-		v1auth.Get("/logout/", authh.Logout)
-		v1auth.Get("/", authh.Root)
-		v1auth.Get("/check", authh.Check)
-		v1auth.Get("/callback", authh.Callback)
+		v1auth.Get("/logout/", hdl.AuthLogout)
+		v1auth.Get("/", hdl.AuthRoot)
+		v1auth.Get("/check", hdl.AuthCheck)
+		v1auth.Get("/callback", hdl.AuthCallback)
 	}
 
+	//deprecated, will be removed
 	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions)
 	{
-		v1.Get("/list-buckets", bcth.List)
-		v1.Post("/make-bucket", bcth.Make)
-		v1.Get("/list-buckets-extended", bcth.ListExtended)
-		v1.Post("/delete-bucket", bcth.Delete)
-		v1.Post("/get-bucket-lifecycle", bcth.GetLifecycle)
-		v1.Post("/set-bucket-lifecycle", bcth.SetLifecycle)
-		v1.Post("/get-bucket-events", bcth.GetEvents)
-		v1.Post("/set-bucket-events", bcth.SetEvents)
-		v1.Post("/remove-bucket-events", bcth.RemoveEvents)
+		v1.Get("/list-buckets", hdl.BuckList)
+		v1.Post("/make-bucket", hdl.BuckMake)
+		v1.Get("/list-buckets-extended", hdl.BuckListExtended)
+		v1.Post("/delete-bucket", hdl.BuckDelete)
+		v1.Post("/get-bucket-lifecycle", hdl.BuckGetLifecycle)
+		v1.Post("/set-bucket-lifecycle", hdl.BuckSetLifecycle)
+		v1.Post("/get-bucket-events", hdl.BuckGetEvents)
+		v1.Post("/set-bucket-events", hdl.BuckSetEvents)
+		v1.Post("/remove-bucket-events", hdl.BuckRemoveEvents)
 
-		v1.Get("/list-users", usrh.List)
-		v1.Post("/set-status-user", usrh.SetStats)
-		v1.Post("/delete-user", usrh.Delete)
-		v1.Post("/add-user", usrh.Add)
-		v1.Post("/create-user-extended", usrh.CreateExtended)
-		v1.Post("/set-user", usrh.Set)
+		v1.Get("/list-users", hdl.UsrList)
+		v1.Post("/set-status-user", hdl.UsrSetStats)
+		v1.Post("/delete-user", hdl.UsrDelete)
+		v1.Post("/add-user", hdl.UsrAdd)
+		v1.Post("/create-user-extended", hdl.UsrCreateExtended)
+		v1.Post("/set-user", hdl.UsrSet)
 
-		v1.Get("/list-policies", plch.List)
-		v1.Post("/add-policy", plch.Add)
-		v1.Post("/delete-policy", plch.Delete)
-		v1.Post("/set-policy", plch.Set)
+		v1.Get("/list-policies", hdl.PolList)
+		v1.Post("/add-policy", hdl.PolAdd)
+		v1.Post("/delete-policy", hdl.PolDelete)
+		v1.Post("/set-policy", hdl.PolSet)
 
-		v1.Post("/set-status-group", grph.SetStatus)
-		v1.Post("/get-description-group", grph.SetDescription)
-		v1.Post("/update-members-group", grph.UpdateMembers)
-		v1.Get("/list-groups", grph.List)
+		v1.Post("/set-status-group", hdl.GrSetStatus)
+		v1.Post("/get-description-group", hdl.GrSetDescription)
+		v1.Post("/update-members-group", hdl.GrUpdateMembers)
+		v1.Get("/list-groups", hdl.GrList)
 
-		v1.Get("/server-info", srvh.ServerInfo)
-		v1.Get("/disk-info", srvh.DiskInfo)
+		v1.Get("/server-info", hdl.ServerInfo)
+		v1.Get("/disk-info", hdl.DiskInfo)
 
-		v1.Post("/get-kv", kvh.Get)
+		v1.Post("/get-kv", hdl.KvGet)
 
+	}
+	// -------------------------------------------
+
+	v2 := app.Party("/api/v2", crs).AllowMethods(iris.MethodOptions)
+	{
+		v2.Get("/buckets/list", hdl.BuckList)
+		v2.Post("/bucket/create", hdl.BuckMake)
+		v2.Get("/buckets/list-extended", hdl.BuckListExtended)
+		v2.Post("/bucket/delete", hdl.BuckDelete)
+		v2.Post("/bucket/get-lifecycle", hdl.BuckGetLifecycle)
+		v2.Post("/bucket/set-lifecycle", hdl.BuckSetLifecycle)
+		v2.Post("/bucket/get-events", hdl.BuckGetEvents)
+		v2.Post("/bucket/set-events", hdl.BuckSetEvents)
+		v2.Post("/bucket/remove-events", hdl.BuckRemoveEvents)
+
+		v2.Get("/users/list", hdl.UsrList)
+		v2.Post("/user/set-status", hdl.UsrSetStats)
+		v2.Post("/user/delete", hdl.UsrDelete)
+		v2.Post("/user/create", hdl.UsrAdd)
+		v2.Post("/user/create-extended", hdl.UsrCreateExtended)
+		v2.Post("/user/update", hdl.UsrSet)
+
+		v2.Get("/policies/list", hdl.PolList)
+		v2.Post("/policy/create", hdl.PolAdd)
+		v2.Post("/policy/delete", hdl.PolDelete)
+		v2.Post("/policy/update", hdl.PolSet)
+
+		v2.Post("/group/set-status", hdl.GrSetStatus)
+		v2.Post("/group/get-description", hdl.GrSetDescription)
+		v2.Post("/group/update-members", hdl.GrUpdateMembers)
+		v2.Get("/groups/list", hdl.GrList)
+
+		v2.Get("/server/common-info", hdl.ServerInfo)
+		v2.Get("/server/disk-info", hdl.DiskInfo)
+
+		v2.Post("/kv/get", hdl.KvGet)
 	}
 
 	app.Run(iris.Addr(cnf.ServerHostPort))

@@ -10,6 +10,6 @@ import (
 func DefaultAuditLog(user goth.User, ctx iris.Context) {
 	ctx.ViewData("", user)
 	if cnf.AuditLogEnable {
-		log.Print("user: ", user.NickName, "; method:", ctx.RouteName())
+		log.Print("userNickName: ", user.NickName, "; userID: ", user.UserID, "; method:", ctx.RouteName())
 	}
 }
