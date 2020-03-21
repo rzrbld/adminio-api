@@ -1,0 +1,6 @@
+scrape_configs:
+- job_name: adminio
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets: ['adminio-host:8080']

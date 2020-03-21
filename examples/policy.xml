@@ -1,0 +1,13 @@
+<LifecycleConfiguration>
+  <Rule>
+    <ID>expire-bucket</ID>
+    <Status>Enabled</Status>
+    <Filter>
+      <And></And>
+      <Tag></Tag>
+    </Filter>
+    <Expiration>
+      <Days>1</Days>
+    </Expiration>
+  </Rule>
+</LifecycleConfiguration>
