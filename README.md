@@ -20,14 +20,23 @@ it will bring up:
 after that you can go to `` http://localhost `` and try out
 
 ### Run with docker
-`` docker run rzrbld/adminio-api:0.2 ``
+```
+docker run -d \
+      -p 8080:8080 \
+      -e ADMINIO_HOST_PORT=":8080" \
+      -e MINIO_HOST_PORT="localhost:9000" \
+      -e MINIO_ACCESS="test" \
+      -e MINIO_SECRET="testtest123" \
+      rzrbld/adminio-api:latest
+
+```
 
 ### Run manually
  - [start](https://docs.min.io/) minio server
  - set env variables
- - run ./main form `dist` folder
+ - compile and run ./main form `src` folder
 
-### Env variables
+### Config Env variables
 | Variable   |      Description      |  Default |
 |--------------|:-----------------------:|-----------:|
 | `ADMINIO_HOST_PORT` | which host and port API should listening. This is Iris based API, so you will need to provide 0.0.0.0:8080 for listening on all interfaces | localhost:8080 |
@@ -48,6 +57,7 @@ after that you can go to `` http://localhost `` and try out
 | `ADMINIO_COOKIE_NAME` | name for the session cookie | adminiosessionid |
 | `ADMINIO_AUDIT_LOG_ENABLE` | enable audit log, mae sense if oauth is enabled, othervise set to false | false |
 | `ADMINIO_METRICS_ENABLE` | enable default iris\golang metrics and bucket sizes metric on /metric/ uri path | false |
+| `ADMINIO_PROBES_ENABLE` | enable liveness and readiness probes for k8s installations | false |
 
 ### Supported oauth providers
 
@@ -66,5 +76,5 @@ after that you can go to `` http://localhost `` and try out
  - wso2
 
  ### example config
-prometheus config: `examples/prometheus.yml`
-bucket policy: `examples/policy.xml` 
+ - prometheus config for adminio metrics: `examples/prometheus.yml`
+ - bucket policy: `examples/policy.xml`

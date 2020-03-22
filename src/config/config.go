@@ -22,6 +22,7 @@ var (
 	OauthEnable, _    = strconv.ParseBool(getEnv("ADMINIO_OAUTH_ENABLE", "false"))
 	AuditLogEnable, _ = strconv.ParseBool(getEnv("ADMINIO_AUDIT_LOG_ENABLE", "false"))
 	MetricsEnable, _  = strconv.ParseBool(getEnv("ADMINIO_METRICS_ENABLE", "false"))
+	ProbesEnable, _   = strconv.ParseBool(getEnv("ADMINIO_PROBES_ENABLE", "false"))
 	OauthProvider     = getEnv("ADMINIO_OAUTH_PROVIDER", "github")
 	OauthClientId     = getEnv("ADMINIO_OAUTH_CLIENT_ID", "my-github-oauth-app-client-id")
 	OauthClientSecret = getEnv("ADMINIO_OAUTH_CLIENT_SECRET", "my-github-oauth-app-secret")
