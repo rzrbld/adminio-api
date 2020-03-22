@@ -36,7 +36,7 @@ docker run -d \
  - set env variables
  - compile and run ./main form `src` folder
 
-### Env variables
+### Config Env variables
 | Variable   |      Description      |  Default |
 |--------------|:-----------------------:|-----------:|
 | `ADMINIO_HOST_PORT` | which host and port API should listening. This is Iris based API, so you will need to provide 0.0.0.0:8080 for listening on all interfaces | localhost:8080 |
