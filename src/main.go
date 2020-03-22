@@ -65,6 +65,11 @@ func main() {
 		app.Get("/metrics", iris.FromStd(promhttp.Handler()))
 	}
 
+	if cnf.ProbesEnable {
+		app.Get("/read", hdl.Readiness)
+		app.Get("/live", hdl.Liveness)
+	}
+
 	v1auth := app.Party("/auth/", crs).AllowMethods(iris.MethodOptions)
 	{
 		v1auth.Get("/logout/", hdl.AuthLogout)
