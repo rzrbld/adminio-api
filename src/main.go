@@ -66,7 +66,7 @@ func main() {
 	}
 
 	if cnf.ProbesEnable {
-		app.Get("/read", hdl.Readiness)
+		app.Get("/ready", hdl.Readiness)
 		app.Get("/live", hdl.Liveness)
 	}
 
