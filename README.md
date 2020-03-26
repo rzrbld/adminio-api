@@ -59,7 +59,7 @@ docker run -d \
 | `ADMINIO_METRICS_ENABLE` | enable default iris\golang metrics and bucket sizes metric on /metric/ uri path | false |
 | `ADMINIO_PROBES_ENABLE` | enable liveness and readiness probes for k8s installations | false |
 
-### Supported oauth providers
+### List of supported oauth providers
 
  - amazon
  - auth0
