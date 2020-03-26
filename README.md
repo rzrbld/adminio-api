@@ -77,4 +77,4 @@ docker run -d \
 
  ### example config
  - prometheus config for adminio metrics: `examples/prometheus.yml`
- - bucket policy: `examples/policy.xml`
+ - bucket lifecycle: `examples/lifecycle.xml`
