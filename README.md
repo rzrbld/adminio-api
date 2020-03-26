@@ -9,7 +9,7 @@ Here is a Web UI for this API - [adminio-ui](https://github.com/rzrbld/adminio-u
 
 ### Run full stack demo
 obtain [docker-compose.yml](https://raw.githubusercontent.com/rzrbld/adminio-ui/master/docker-compose.yml) from [adminio-ui](https://github.com/rzrbld/adminio-ui) repository. And run it:
-`` docker-compose -f docker-compose.yml up ``
+`docker-compose -f docker-compose.yml up`
 
 it will bring up:
 
@@ -17,7 +17,7 @@ it will bring up:
  - adminio API on 8080 port
  - adminio UI on 80 port
 
-after that you can go to `` http://localhost `` and try out
+after that you can go to `http://localhost` and try out
 
 ### Run with docker
 ```
@@ -34,7 +34,7 @@ docker run -d \
 ### Run manually
  - [start](https://docs.min.io/) minio server
  - set env variables
- - compile and run ./main form `src` folder
+ - go to `src` folder and compile with `go build main.go`, then run `./main` binary
 
 ### Config Env variables
 | Variable   |      Description      |  Default |
@@ -56,8 +56,8 @@ docker run -d \
 | `ADMINIO_COOKIE_BLOCK_KEY` | block key for session cookies. AES only supports key sizes of 16, 24 or 32 bytes | bnfYuphzxPhJMR823YNezH83fuHuddFC |
 | `ADMINIO_COOKIE_NAME` | name for the session cookie | adminiosessionid |
 | `ADMINIO_AUDIT_LOG_ENABLE` | enable audit log, mae sense if oauth is enabled, othervise set to false | false |
-| `ADMINIO_METRICS_ENABLE` | enable default iris\golang metrics and bucket sizes metric on /metric/ uri path | false |
-| `ADMINIO_PROBES_ENABLE` | enable liveness and readiness probes for k8s installations | false |
+| `ADMINIO_METRICS_ENABLE` | enable default iris/golang metrics and bucket sizes metric on `/metric/` uri path | false |
+| `ADMINIO_PROBES_ENABLE` | enable liveness and readiness probes for k8s at `/ready/` and `/live/` uri path installations | false |
 
 ### List of supported oauth providers
 
