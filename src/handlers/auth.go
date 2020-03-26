@@ -14,7 +14,7 @@ var AuthLogout = func(ctx iris.Context) {
 var AuthRoot = func(ctx iris.Context) {
 	// try to get the user without re-authenticating
 	if gothUser, err := auth.CompleteUserAuth(ctx); err == nil {
-		ctx.ViewData("", gothUser)
+		auth.Redirect(ctx)
 		ctx.JSON(iris.Map{"name": gothUser.UserID, "auth": true, "oauth": cnf.OauthEnable})
 	} else {
 		auth.BeginAuthHandler(ctx)
@@ -37,5 +37,5 @@ var AuthCallback = func(ctx iris.Context) {
 		ctx.Writef("%v", err)
 		return
 	}
-	auth.RedirectOnCallback(ctx)
+	auth.Redirect(ctx)
 }

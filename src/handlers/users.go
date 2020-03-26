@@ -18,18 +18,26 @@ var UsrSetStats = func(ctx iris.Context) {
 	us.accessKey = ctx.FormValue("accessKey")
 	us.status = madmin.AccountStatus(ctx.FormValue("status"))
 
-	err = madmClnt.SetUserStatus(us.accessKey, us.status)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.SetUserStatus(us.accessKey, us.status)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var UsrDelete = func(ctx iris.Context) {
 	user := User{}
 	user.accessKey = ctx.FormValue("accessKey")
 
-	err = madmClnt.RemoveUser(user.accessKey)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.RemoveUser(user.accessKey)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var UsrAdd = func(ctx iris.Context) {
@@ -37,9 +45,13 @@ var UsrAdd = func(ctx iris.Context) {
 	user.accessKey = ctx.FormValue("accessKey")
 	user.secretKey = ctx.FormValue("secretKey")
 
-	err = madmClnt.AddUser(user.accessKey, user.secretKey)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.AddUser(user.accessKey, user.secretKey)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var UsrCreateExtended = func(ctx iris.Context) {
@@ -51,14 +63,18 @@ var UsrCreateExtended = func(ctx iris.Context) {
 	u.accessKey = ctx.FormValue("accessKey")
 	u.secretKey = ctx.FormValue("secretKey")
 
-	err = madmClnt.AddUser(u.accessKey, u.secretKey)
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(iris.Map{"error": err.Error()})
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.AddUser(u.accessKey, u.secretKey)
+		if err != nil {
+			log.Print(err)
+			ctx.JSON(iris.Map{"error": err.Error()})
+		} else {
+			err = madmClnt.SetPolicy(p.policyName, p.entityName, false)
+			var res = resph.DefaultResHandler(ctx, err)
+			ctx.JSON(res)
+		}
 	} else {
-		err = madmClnt.SetPolicy(p.policyName, p.entityName, false)
-		var res = resph.DefaultResHandler(ctx, err)
-		ctx.JSON(res)
+		ctx.JSON(resph.DefaultAuthError())
 	}
 }
 
@@ -71,22 +87,27 @@ var UsrSet = func(ctx iris.Context) {
 	u.secretKey = ctx.FormValue("secretKey")
 	us.status = madmin.AccountStatus(ctx.FormValue("status"))
 	p.policyName = ctx.FormValue("policyName")
-	if u.secretKey == "" {
-		err = madmClnt.SetUserStatus(u.accessKey, us.status)
-	} else {
-		err = madmClnt.SetUser(u.accessKey, u.secretKey, us.status)
-	}
-	if err != nil {
-		log.Print(err)
-		ctx.JSON(iris.Map{"error": err.Error()})
-	} else {
-		if p.policyName == "" {
-			var res = resph.DefaultResHandler(ctx, err)
-			ctx.JSON(res)
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		if u.secretKey == "" {
+			err = madmClnt.SetUserStatus(u.accessKey, us.status)
 		} else {
-			err = madmClnt.SetPolicy(p.policyName, u.accessKey, false)
-			var res = resph.DefaultResHandler(ctx, err)
-			ctx.JSON(res)
+			err = madmClnt.SetUser(u.accessKey, u.secretKey, us.status)
 		}
+		if err != nil {
+			log.Print(err)
+			ctx.JSON(iris.Map{"error": err.Error()})
+		} else {
+			if p.policyName == "" {
+				var res = resph.DefaultResHandler(ctx, err)
+				ctx.JSON(res)
+			} else {
+				err = madmClnt.SetPolicy(p.policyName, u.accessKey, false)
+				var res = resph.DefaultResHandler(ctx, err)
+				ctx.JSON(res)
+			}
+		}
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
 	}
 }

@@ -36,21 +36,30 @@ var BuckListExtended = func(ctx iris.Context) {
 var BuckMake = func(ctx iris.Context) {
 	var newBucket = ctx.FormValue("newBucket")
 	var newBucketRegion = ctx.FormValue("newBucketRegion")
+
 	if newBucketRegion == "" {
 		newBucketRegion = cnf.Region
 	}
 
-	err := minioClnt.MakeBucket(newBucket, newBucketRegion)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := minioClnt.MakeBucket(newBucket, newBucketRegion)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var BuckDelete = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
-	err := minioClnt.RemoveBucket(bucketName)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := minioClnt.RemoveBucket(bucketName)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var BuckGetLifecycle = func(ctx iris.Context) {
@@ -65,15 +74,19 @@ var BuckSetLifecycle = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 	var lifecycle = ctx.FormValue("lifecycle")
 
-	err := minioClnt.SetBucketLifecycle(bucketName, lifecycle)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := minioClnt.SetBucketLifecycle(bucketName, lifecycle)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var BuckGetEvents = func(ctx iris.Context) {
 	var bucket = ctx.FormValue("bucket")
-	bn, err := minioClnt.GetBucketNotification(bucket)
 
+	bn, err := minioClnt.GetBucketNotification(bucket)
 	var res = resph.BodyResHandler(ctx, err, bn)
 	ctx.JSON(res)
 }
@@ -88,50 +101,58 @@ var BuckSetEvents = func(ctx iris.Context) {
 	var filterPrefix = ctx.FormValue("filterPrefix")
 	var filterSuffix = ctx.FormValue("filterSuffix")
 
-	bucketNotify, err := minioClnt.GetBucketNotification(bucket)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		bucketNotify, err := minioClnt.GetBucketNotification(bucket)
 
-	var newNotification = minio.NewNotificationConfig(stsARN)
-	for _, event := range eventTypes {
-		switch event {
-		case "put":
-			newNotification.AddEvents(minio.ObjectCreatedAll)
-		case "delete":
-			newNotification.AddEvents(minio.ObjectRemovedAll)
-		case "get":
-			newNotification.AddEvents(minio.ObjectAccessedAll)
+		var newNotification = minio.NewNotificationConfig(stsARN)
+		for _, event := range eventTypes {
+			switch event {
+			case "put":
+				newNotification.AddEvents(minio.ObjectCreatedAll)
+			case "delete":
+				newNotification.AddEvents(minio.ObjectRemovedAll)
+			case "get":
+				newNotification.AddEvents(minio.ObjectAccessedAll)
+			}
 		}
-	}
-	if filterPrefix != "" {
-		newNotification.AddFilterPrefix(filterPrefix)
-	}
-	if filterSuffix != "" {
-		newNotification.AddFilterSuffix(filterSuffix)
-	}
+		if filterPrefix != "" {
+			newNotification.AddFilterPrefix(filterPrefix)
+		}
+		if filterSuffix != "" {
+			newNotification.AddFilterSuffix(filterSuffix)
+		}
 
-	switch arrARN[2] {
-	case "sns":
-		if bucketNotify.AddTopic(newNotification) {
-			err = fmt.Errorf("Overlapping Topic configs")
+		switch arrARN[2] {
+		case "sns":
+			if bucketNotify.AddTopic(newNotification) {
+				err = fmt.Errorf("Overlapping Topic configs")
+			}
+		case "sqs":
+			if bucketNotify.AddQueue(newNotification) {
+				err = fmt.Errorf("Overlapping Queue configs")
+			}
+		case "lambda":
+			if bucketNotify.AddLambda(newNotification) {
+				err = fmt.Errorf("Overlapping lambda configs")
+			}
 		}
-	case "sqs":
-		if bucketNotify.AddQueue(newNotification) {
-			err = fmt.Errorf("Overlapping Queue configs")
-		}
-	case "lambda":
-		if bucketNotify.AddLambda(newNotification) {
-			err = fmt.Errorf("Overlapping lambda configs")
-		}
-	}
 
-	err = minioClnt.SetBucketNotification(bucket, bucketNotify)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+		err = minioClnt.SetBucketNotification(bucket, bucketNotify)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var BuckRemoveEvents = func(ctx iris.Context) {
 	var bucket = ctx.FormValue("bucket")
-	err := minioClnt.RemoveAllBucketNotification(bucket)
 
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := minioClnt.RemoveAllBucketNotification(bucket)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
