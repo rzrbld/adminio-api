@@ -5,12 +5,7 @@ import (
 	resph "github.com/rzrbld/adminio-api/response"
 )
 
-var Readiness = func(ctx iris.Context) {
-	var res = resph.DefaultResConstructor(ctx, nil)
-	ctx.JSON(res)
-}
-
-var Liveness = func(ctx iris.Context) {
-	var res = resph.DefaultResConstructor(ctx, nil)
+var Probes = func(ctx iris.Context) {
+	var res = resph.DefaultResConstructor(nil)
 	ctx.JSON(res)
 }

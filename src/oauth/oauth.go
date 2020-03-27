@@ -126,7 +126,9 @@ func Logout(ctx iris.Context) error {
 	return nil
 }
 
-func RedirectOnCallback(ctx iris.Context) {
+func Redirect(ctx iris.Context) {
 	url := GetState(ctx)
-	ctx.Redirect(url, iris.StatusTemporaryRedirect)
+	if url != "" && url != "state" {
+		ctx.Redirect(url, iris.StatusTemporaryRedirect)
+	}
 }

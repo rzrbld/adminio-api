@@ -66,8 +66,8 @@ func main() {
 	}
 
 	if cnf.ProbesEnable {
-		app.Get("/ready", hdl.Readiness)
-		app.Get("/live", hdl.Liveness)
+		app.Get("/ready", hdl.Probes)
+		app.Get("/live", hdl.Probes)
 	}
 
 	v1auth := app.Party("/auth/", crs).AllowMethods(iris.MethodOptions)

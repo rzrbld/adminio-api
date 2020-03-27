@@ -18,18 +18,26 @@ var PolAdd = func(ctx iris.Context) {
 	p.policyName = ctx.FormValue("policyName")
 	p.policyString = ctx.FormValue("policyString")
 
-	err = madmClnt.AddCannedPolicy(p.policyName, p.policyString)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.AddCannedPolicy(p.policyName, p.policyString)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var PolDelete = func(ctx iris.Context) {
 	p := policySet{}
 	p.policyName = ctx.FormValue("policyName")
 
-	err = madmClnt.RemoveCannedPolicy(p.policyName)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+  if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.RemoveCannedPolicy(p.policyName)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var PolSet = func(ctx iris.Context) {
@@ -45,7 +53,11 @@ var PolSet = func(ctx iris.Context) {
 		ctx.JSON(iris.Map{"error": err.Error()})
 	}
 
-	err = madmClnt.SetPolicy(p.policyName, p.entityName, isGroupBool)
-	var res = resph.DefaultResHandler(ctx, err)
-	ctx.JSON(res)
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.SetPolicy(p.policyName, p.entityName, isGroupBool)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
