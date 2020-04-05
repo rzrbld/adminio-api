@@ -8,10 +8,25 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-var opsProcessed = promauto.NewGaugeVec(prometheus.GaugeOpts{
+var bucketsSizes = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "bucket_size_current",
 	Help: "bucket size in kbytes",
 }, []string{"bucket"})
+
+var objectsCount = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "objects_count_current",
+	Help: "number of objects on cluster",
+})
+
+var objectsSize = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "objects_total_size_current",
+	Help: "size of objects on cluster",
+})
+
+var bucketsCount = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "bucket_count_current",
+	Help: "number of buckets on cluster",
+})
 
 func RecordMetrics() {
 	go func() {
@@ -22,11 +37,23 @@ func RecordMetrics() {
 			} else {
 				if len(du.BucketsSizes) != 0 {
 					for k, v := range du.BucketsSizes {
-						opsProcessed.WithLabelValues(string(k)).Set(float64(v))
+						bucketsSizes.WithLabelValues(string(k)).Set(float64(v))
 					}
 				}
+
+				if du.ObjectsCount >= 0 {
+					objectsCount.Set(float64(du.ObjectsCount))
+				}
+
+				if du.ObjectsTotalSize >= 0 {
+					objectsSize.Set(float64(du.ObjectsTotalSize))
+				}
+
+				if du.BucketsCount >= 0 {
+					bucketsCount.Set(float64(du.BucketsCount))
+				}
 			}
-			time.Sleep(30 * time.Minute)
+			time.Sleep(2 * time.Minute)
 		}
 	}()
 }
