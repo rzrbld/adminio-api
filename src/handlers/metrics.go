@@ -40,18 +40,9 @@ func RecordMetrics() {
 						bucketsSizes.WithLabelValues(string(k)).Set(float64(v))
 					}
 				}
-
-				if du.ObjectsCount >= 0 {
-					objectsCount.Set(float64(du.ObjectsCount))
-				}
-
-				if du.ObjectsTotalSize >= 0 {
-					objectsSize.Set(float64(du.ObjectsTotalSize))
-				}
-
-				if du.BucketsCount >= 0 {
-					bucketsCount.Set(float64(du.BucketsCount))
-				}
+				objectsCount.Set(float64(du.ObjectsCount))
+				objectsSize.Set(float64(du.ObjectsTotalSize))
+				bucketsCount.Set(float64(du.BucketsCount))
 			}
 			time.Sleep(2 * time.Minute)
 		}
