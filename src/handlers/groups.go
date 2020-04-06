@@ -25,7 +25,7 @@ var GrSetStatus = func(ctx iris.Context) {
 var GrSetDescription = func(ctx iris.Context) {
 	var group = ctx.FormValue("group")
 
-  if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) != false {
 		grp, err := madmClnt.GetGroupDescription(group)
 		var res = resph.BodyResHandler(ctx, err, grp)
 		ctx.JSON(res)

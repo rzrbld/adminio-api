@@ -31,7 +31,7 @@ var PolDelete = func(ctx iris.Context) {
 	p := policySet{}
 	p.policyName = ctx.FormValue("policyName")
 
-  if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) != false {
 		err = madmClnt.RemoveCannedPolicy(p.policyName)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
