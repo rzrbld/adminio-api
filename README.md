@@ -2,6 +2,9 @@
 This is a simple admin "REST" API for [minio](https://min.io/) s3 server.
 Here is a Web UI for this API - [adminio-ui](https://github.com/rzrbld/adminio-ui)
 
+![Docker hub stats](https://img.shields.io/docker/pulls/rzrbld/adminio-api?style=flat-square) ![GitHub License](https://img.shields.io/github/license/rzrbld/adminio-api?style=flat-square)
+
+
 ### Breaking changes in 0.9 version
 
  - env renamed: API_HOST_PORT > ADMINIO_HOST_PORT
