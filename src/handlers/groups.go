@@ -11,9 +11,10 @@ import (
 
 var GrSetStatus = func(ctx iris.Context) {
 	var group = ctx.FormValue("group")
+	var status = ctx.FormValue("status")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		var status = madmin.GroupStatus(group)
+		var status = madmin.GroupStatus(status)
 		err = madmClnt.SetGroupStatus(group, status)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
