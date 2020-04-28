@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -31,7 +32,7 @@ var bucketsCount = promauto.NewGauge(prometheus.GaugeOpts{
 func RecordMetrics() {
 	go func() {
 		for {
-			du, err := madmClnt.DataUsageInfo()
+			du, err := madmClnt.DataUsageInfo(context.Background())
 			if err != nil {
 				log.Print("Error while getting bucket size metrics from server")
 			} else {

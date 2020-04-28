@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	iris "github.com/kataras/iris/v12"
 	madmin "github.com/minio/minio/pkg/madmin"
 	resph "github.com/rzrbld/adminio-api/response"
@@ -8,7 +9,7 @@ import (
 )
 
 var UsrList = func(ctx iris.Context) {
-	st, err := madmClnt.ListUsers()
+	st, err := madmClnt.ListUsers(context.Background())
 	var res = resph.BodyResHandler(ctx, err, st)
 	ctx.JSON(res)
 }
@@ -19,7 +20,7 @@ var UsrSetStats = func(ctx iris.Context) {
 	us.status = madmin.AccountStatus(ctx.FormValue("status"))
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = madmClnt.SetUserStatus(us.accessKey, us.status)
+		err = madmClnt.SetUserStatus(context.Background(), us.accessKey, us.status)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -32,7 +33,7 @@ var UsrDelete = func(ctx iris.Context) {
 	user.accessKey = ctx.FormValue("accessKey")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = madmClnt.RemoveUser(user.accessKey)
+		err = madmClnt.RemoveUser(context.Background(), user.accessKey)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -46,7 +47,7 @@ var UsrAdd = func(ctx iris.Context) {
 	user.secretKey = ctx.FormValue("secretKey")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = madmClnt.AddUser(user.accessKey, user.secretKey)
+		err = madmClnt.AddUser(context.Background(), user.accessKey, user.secretKey)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -64,12 +65,12 @@ var UsrCreateExtended = func(ctx iris.Context) {
 	u.secretKey = ctx.FormValue("secretKey")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = madmClnt.AddUser(u.accessKey, u.secretKey)
+		err = madmClnt.AddUser(context.Background(), u.accessKey, u.secretKey)
 		if err != nil {
 			log.Print(err)
 			ctx.JSON(iris.Map{"error": err.Error()})
 		} else {
-			err = madmClnt.SetPolicy(p.policyName, p.entityName, false)
+			err = madmClnt.SetPolicy(context.Background(), p.policyName, p.entityName, false)
 			var res = resph.DefaultResHandler(ctx, err)
 			ctx.JSON(res)
 		}
@@ -90,9 +91,9 @@ var UsrSet = func(ctx iris.Context) {
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		if u.secretKey == "" {
-			err = madmClnt.SetUserStatus(u.accessKey, us.status)
+			err = madmClnt.SetUserStatus(context.Background(), u.accessKey, us.status)
 		} else {
-			err = madmClnt.SetUser(u.accessKey, u.secretKey, us.status)
+			err = madmClnt.SetUser(context.Background(), u.accessKey, u.secretKey, us.status)
 		}
 		if err != nil {
 			log.Print(err)
@@ -102,7 +103,7 @@ var UsrSet = func(ctx iris.Context) {
 				var res = resph.DefaultResHandler(ctx, err)
 				ctx.JSON(res)
 			} else {
-				err = madmClnt.SetPolicy(p.policyName, u.accessKey, false)
+				err = madmClnt.SetPolicy(context.Background(), p.policyName, u.accessKey, false)
 				var res = resph.DefaultResHandler(ctx, err)
 				ctx.JSON(res)
 			}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	iris "github.com/kataras/iris/v12"
 	madmin "github.com/minio/minio/pkg/madmin"
 	resph "github.com/rzrbld/adminio-api/response"
@@ -15,7 +16,7 @@ var GrSetStatus = func(ctx iris.Context) {
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		var status = madmin.GroupStatus(status)
-		err = madmClnt.SetGroupStatus(group, status)
+		err = madmClnt.SetGroupStatus(context.Background(), group, status)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -27,7 +28,7 @@ var GrSetDescription = func(ctx iris.Context) {
 	var group = ctx.FormValue("group")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		grp, err := madmClnt.GetGroupDescription(group)
+		grp, err := madmClnt.GetGroupDescription(context.Background(), group)
 		var res = resph.BodyResHandler(ctx, err, grp)
 		ctx.JSON(res)
 	} else {
@@ -47,7 +48,7 @@ var GrUpdateMembers = func(ctx iris.Context) {
 	}
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = madmClnt.UpdateGroupMembers(gar)
+		err = madmClnt.UpdateGroupMembers(context.Background(), gar)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -57,7 +58,7 @@ var GrUpdateMembers = func(ctx iris.Context) {
 }
 
 var GrList = func(ctx iris.Context) {
-	lg, err := madmClnt.ListGroups()
+	lg, err := madmClnt.ListGroups(context.Background())
 	var res = resph.BodyResHandler(ctx, err, lg)
 	ctx.JSON(res)
 }
