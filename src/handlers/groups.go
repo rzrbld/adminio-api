@@ -39,7 +39,9 @@ var GrSetDescription = func(ctx iris.Context) {
 var GrUpdateMembers = func(ctx iris.Context) {
 	gar := madmin.GroupAddRemove{}
 	gar.Group = ctx.FormValue("group")
-	gar.Members = strings.Split(ctx.FormValue("members"), ",")
+	if ctx.FormValue("members") != "" {
+		gar.Members = strings.Split(ctx.FormValue("members"), ",")
+	}
 
 	gar.IsRemove, err = strconv.ParseBool(ctx.FormValue("IsRemove"))
 	if err != nil {
