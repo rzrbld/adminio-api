@@ -128,6 +128,9 @@ func main() {
 		v2.Post("/bucket/get-events", hdl.BuckGetEvents)
 		v2.Post("/bucket/set-events", hdl.BuckSetEvents)
 		v2.Post("/bucket/remove-events", hdl.BuckRemoveEvents)
+		v2.Post("/bucket/set-quota", hdl.BuckSetQuota)
+		v2.Post("/bucket/get-quota", hdl.BuckGetQuota)
+		v2.Post("/bucket/remove-quota", hdl.BuckRemoveQuota)
 
 		v2.Get("/users/list", hdl.UsrList)
 		v2.Post("/user/set-status", hdl.UsrSetStats)

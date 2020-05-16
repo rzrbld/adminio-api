@@ -4,9 +4,12 @@ import (
 	"fmt"
 	log "log"
 	"strings"
+	"strconv"
+	"context"
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
+	madmin "github.com/minio/minio/pkg/madmin"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
 )
@@ -150,6 +153,45 @@ var BuckRemoveEvents = func(ctx iris.Context) {
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		err := minioClnt.RemoveAllBucketNotification(bucket)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckSetQuota = func(ctx iris.Context) {
+	var bucket = ctx.FormValue("bucket")
+	var quotaType = madmin.QuotaType(ctx.FormValue("quotaType"))
+	var quotaStr = ctx.FormValue("quota")
+	var quota, _ = strconv.ParseUint(quotaStr, 10, 64);
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.SetBucketQuota(context.Background(), bucket, quota, quotaType)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckGetQuota = func(ctx iris.Context) {
+	var bucket = ctx.FormValue("bucket")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		bq, err := madmClnt.GetBucketQuota(context.Background(), bucket)
+		var res = resph.BodyResHandler(ctx, err, bq)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckRemoveQuota = func(ctx iris.Context) {
+	var bucket = ctx.FormValue("bucket")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := madmClnt.RemoveBucketQuota(context.Background(), bucket)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
