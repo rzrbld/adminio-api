@@ -155,5 +155,10 @@ func main() {
 		v2.Post("/kv/get", hdl.KvGet)
 	}
 
+	v3 := app.Party("/api/v3", crs).AllowMethods(iris.MethodOptions)
+	{
+		v3.Get("/buckets/list-extended", hdl.BuckListExtendedv3)
+	}
+
 	app.Run(iris.Addr(cnf.ServerHostPort))
 }

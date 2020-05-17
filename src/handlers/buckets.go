@@ -36,6 +36,26 @@ var BuckListExtended = func(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+var BuckListExtendedv3 = func(ctx iris.Context) {
+	lb, err := minioClnt.ListBuckets()
+	allBuckets := []interface{}{}
+	for _, bucket := range lb {
+		bn, err := minioClnt.GetBucketNotification(bucket.Name)
+		if err != nil {
+			log.Print("Error while getting bucket notification")
+		}
+		bq, err := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
+		if err != nil {
+			log.Print("Error while getting bucket quota")
+		}
+		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq}
+		allBuckets = append(allBuckets, br)
+	}
+
+	var res = resph.BodyResHandler(ctx, err, allBuckets)
+	ctx.JSON(res)
+}
+
 var BuckMake = func(ctx iris.Context) {
 	var newBucket = ctx.FormValue("newBucket")
 	var newBucketRegion = ctx.FormValue("newBucketRegion")
