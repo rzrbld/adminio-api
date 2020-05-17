@@ -4,7 +4,10 @@
     <Status>Enabled</Status>
     <Filter>
       <And></And>
-      <Tag></Tag>
+      <Tag>
+        <Key>Key</Key>
+        <Value>Value</Value>
+      </Tag>
     </Filter>
     <Expiration>
       <Days>1</Days>

@@ -1,0 +1,726 @@
+openapi: "3.0.0"
+info:
+  description: "Adminio API"
+  version: "1.0.0"
+  title: "Adminio API"
+  contact:
+    name: "rzrbld at github.com"
+    url: "https://github.com/rzrbld/adminio-api/issues"
+  license:
+    name: "MIT"
+    url: "https://github.com/rzrbld/adminio-api/blob/master/LICENSE"
+servers:
+  - url: http://localhost:8080/api/v2
+paths:
+  /buckets/list:
+    get:
+      summary: List all buckets
+      operationId: listBuckets
+      tags:
+        - bucket
+      responses:
+        '200':
+          description: List all buckets
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/BucketList"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /buckets/list-extended:
+    get:
+      summary: List all buckets with ARN's and Quota's
+      operationId: listBucketsExtended
+      tags:
+        - bucket
+      responses:
+        '200':
+          description: List all buckets plus ARN and Quota
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/BucketListExtended"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/create:
+    post:
+      summary: Create a bucket
+      operationId: createBucket
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                newBucket:
+                  type: string
+                  format: string
+                newBucketRegion:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/delete:
+    post:
+      summary: Delete bucket
+      operationId: deleteBucket
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/remove-events:
+    post:
+      summary: remove bucket events notifications
+      operationId: removeBucketEvents
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucket:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/set-events:
+    post:
+      summary: Set bucket events
+      operationId: setBucketEvents
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucket:
+                  type: string
+                  format: string
+                eventTypes:
+                  type: string
+                  format: string
+                filterPrefix:
+                  type: string
+                  format: string
+                filterSuffix:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: lifecycle XML string or empty string if lifecycle does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/get-events:
+    post:
+      summary: Get bucket events
+      operationId: getBucketEvents
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucket:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: return bucket event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BucketEvent"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/get-lifecycle:
+    post:
+      summary: Get bucket lifecycle
+      operationId: getBucketLifecycle
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: lifecycle XML string or empty string if lifecycle does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BucketLifecycle"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/set-lifecycle:
+    post:
+      summary: Set bucket lifecycle
+      operationId: setBucketLifecycle
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+                lifecycle:
+                  description: lifecycle XML string
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/set-quota:
+    post:
+      summary: Set bucket quota
+      operationId: setBucketQuota
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+                quotaType:
+                  type: string
+                  format: string
+                quotaValue:
+                  description: quota size in bytes
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/get-quota:
+    post:
+      summary: Get bucket quota
+      operationId: getBucketQuota
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: bucket quota
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BucketQuota"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/remove-quota:
+    post:
+      summary: Remove bucket quota
+      operationId: removeBucketQuota
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /users/list:
+    get:
+      summary: List all users
+      operationId: listUsers
+      tags:
+        - user
+      responses:
+        '200':
+          description: List all users
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/set-status:
+    post:
+      summary: Set User status
+      operationId: setUserStatus
+      tags:
+        - user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                accessKey:
+                  type: string
+                  format: string
+                status:
+                  enum: [enabled, disabled]
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/delete:
+    post:
+      summary: Delete User
+      operationId: deleteUser
+      tags:
+        - user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                accessKey:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/create:
+    post:
+      summary: Create User
+      operationId: createUser
+      tags:
+        - user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                accessKey:
+                  type: string
+                  format: string
+                secretKey:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/create-extended:
+    post:
+      summary: Create User with bounded policy
+      operationId: createUserWPolicy
+      tags:
+        - user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                accessKey:
+                  type: string
+                  format: string
+                secretKey:
+                  type: string
+                  format: string
+                policyName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/update:
+    post:
+      summary: Update User - change policy or status
+      operationId: updateUser
+      tags:
+        - user
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                accessKey:
+                  type: string
+                  format: string
+                secretKey:
+                  type: string
+                  format: string
+                policyName:
+                  type: string
+                  format: string
+                status:
+                  type: string
+                  format: string
+                  enum: [enabled, disabled]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /policies/list:
+    get:
+      summary: List all policies
+      operationId: listPolicy
+      tags:
+        - policy
+      responses:
+        '200':
+          description: List all policies
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/PolicyList"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /policy/create:
+    post:
+      summary: Create policy
+      operationId: createPolicy
+      tags:
+        - policy
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                policyName:
+                  type: string
+                  format: string
+                policyString:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /policy/delete:
+    post:
+      summary: Delete policy
+      operationId: deletePolicy
+      tags:
+        - policy
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                policyName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+#   /policy/update:
+#   /group/set-status:
+#   /group/get-description:
+#   /group/update-members:
+#   /groups/list:
+#   /server/common-info:
+#   /server/disk-info:
+#   /kv/get:
+
+components:
+  schemas:
+    UserInfo:
+     properties:
+       name:
+         type: object
+         properties:
+           policyName:
+             type: string
+           status:
+             type: string
+    PolicyInfo:
+     properties:
+       name:
+         type: object
+         properties:
+           Version:
+             type: string
+           Statement:
+             type: array
+             items:
+               type: object
+               properties:
+                 Effect:
+                   type: string
+                 Action:
+                   type: array
+                   items:
+                     type: string
+                 Resource:
+                   type: array
+                   items:
+                     type: string
+    UserList:
+      type: object
+      $ref: "#/components/schemas/UserInfo"
+    PolicyList:
+      type: object
+      $ref: "#/components/schemas/PolicyInfo"
+    BucketEvent:
+     type: object
+     properties:
+       XMLname:
+         type: object
+         properties:
+           Space:
+             type: string
+           Local:
+             type: string
+       LambdaConfigs:
+         type: object
+       TopicConfigs:
+         type: object
+       QueueConfigs:
+         type: object
+    BucketQuota:
+     type: object
+     properties:
+       quota:
+         type: integer
+       quotatype:
+         type: string
+    BucketInfo:
+     type: object
+     properties:
+       name:
+         type: string
+       creationDate:
+         type: string
+    BucketList:
+      type: array
+      items:
+       $ref: "#/components/schemas/BucketInfo"
+    BucketListExtended:
+      type: array
+      items:
+       type: object
+       properties:
+         events:
+           $ref: "#/components/schemas/BucketEvent"
+         info:
+           $ref: "#/components/schemas/BucketInfo"
+         quota:
+           $ref: "#/components/schemas/BucketQuota"
+    BucketLifecycle:
+      type: string
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+    Success:
+      type: object
+      example: {"Success":"OK"}
+      required:
+        - Success
+      properties:
+        Success:
+          type: string
+          
