@@ -613,17 +613,345 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-#   /policy/update:
-#   /group/set-status:
-#   /group/get-description:
-#   /group/update-members:
-#   /groups/list:
-#   /server/common-info:
-#   /server/disk-info:
-#   /kv/get:
+  /policy/update:
+    post:
+      summary: Bound policy to user or group
+      operationId: setPolicy
+      tags:
+        - policy
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                policyName:
+                  description: Ploicy Name
+                  type: string
+                  format: string
+                entityName:
+                  description: Group or User name
+                  type: string
+                  format: string
+                isGroup:
+                  type: boolean
+                  format: boolean
+                  enum: [true,false]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /group/set-status:
+    post:
+      summary: Group set status
+      operationId: groupSetStatus
+      tags:
+        - group
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                group:
+                  description: Group Name
+                  type: string
+                  format: string
+                status:
+                  type: boolean
+                  format: boolean
+                  enum: [enabled,disabled]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /group/get-description:
+    post:
+      summary: Group get description
+      operationId: groupGetDescription
+      tags:
+        - group
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                group:
+                  description: Group Name
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupInfo"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /group/update-members:
+    post:
+      summary: Update Group members
+      operationId: groupUpdateMembers
+      tags:
+        - group
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                group:
+                  description: Group Name
+                  type: string
+                  format: string
+                members:
+                  description: multiple usernames with comma delimiter
+                  type: string
+                  format: string
+                IsRemove:
+                  description: set false if you need remove members from group
+                  type: boolean
+                  format: boolean
+                  enum: [true,false]
+
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /groups/list:
+    get:
+      summary: List all groups
+      operationId: groupsList
+      tags:
+        - group
+      responses:
+        '200':
+          description: List all groups
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/GroupList"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /server/common-info:
+    get:
+      summary: Server basic info
+      operationId: serverCommonInfo
+      tags:
+        - server
+      responses:
+        '200':
+          description: Server Info
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ServerInfo"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /server/disk-info:
+    get:
+      summary: Server disk info
+      operationId: serverDiskInfo
+      tags:
+        - server
+      responses:
+        '200':
+          description: Server Disk Info
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ServerDisk"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /kv/get:
+    post:
+      summary: get value by key
+      operationId: kvGet
+      tags:
+        - kv
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                keyString:
+                  description: Group Name
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: base64 string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKV"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
+    GetKV:
+      type: string
+    ServerDisk:
+      type: object
+      properties:
+        lastUpdate:
+          type: string
+        objectsCount:
+          type: integer
+        objectsTotalSize:
+          type: integer
+        objectsSizesHistogram:
+          type: object
+          properties:
+           BETWEEN_1024_B_AND_1_MB:
+             type: integer
+           BETWEEN_10_MB_AND_64_MB:
+             type: integer
+           BETWEEN_128_MB_AND_512_MB:
+             type: integer
+           BETWEEN_1_MB_AND_10_MB:
+             type: integer
+           BETWEEN_64_MB_AND_128_MB:
+             type: integer
+           GREATER_THAN_512_MB:
+             type: integer
+           LESS_THAN_1024_B:
+             type: integer
+        bucketsCount:
+          type: integer
+        bucketsSizes:
+          type: object
+    ServerInfo:
+      type: object
+      properties:
+       mode:
+         type: string
+       sqsARN:
+         type: array
+         items:
+           type: string
+       deploymentID:
+         type: string
+       buckets:
+         type: object
+         properties:
+           count:
+             type: integer
+       objects:
+         type: object
+         properties:
+           count:
+             type: integer
+       usage:
+         type: object
+         properties:
+           size:
+             type: integer
+       services:
+         type: object
+         properties:
+           vault:
+             type: object
+             properties:
+               status:
+                 type: string
+           ldap:
+             type: object
+           notifications:
+             type: array
+             items:
+               type: object
+               properties:
+                 kafka:
+                   type: array
+                   items:
+                     type: object
+       backend:
+         type: object
+         properties:
+           backendType:
+             type: string
+       servers:
+         type: array
+         items:
+           type: object
+           properties:
+             state:
+               type: string
+             endpoint:
+               type: string
+             uptime:
+               type: string
+             version:
+               type: string
+             commitID:
+               type: string
+             network:
+               type: object
+             disks:
+               type: array
+               items:
+                 type: object
+                 properties:
+                   path:
+                     type: string
+                   state:
+                     type: string
+                   totalspace:
+                     type: string
+                   usedspace:
+                     type: string
     UserInfo:
      properties:
        name:
@@ -633,6 +961,18 @@ components:
              type: string
            status:
              type: string
+    GroupInfo:
+     properties:
+       name:
+         type: string
+       status:
+         type: string
+       members:
+         type: array
+         items:
+           type: string
+       policy:
+         type: string
     PolicyInfo:
      properties:
        name:
@@ -661,6 +1001,11 @@ components:
     PolicyList:
       type: object
       $ref: "#/components/schemas/PolicyInfo"
+    GroupList:
+      type: array
+      items:
+        type: string
+
     BucketEvent:
      type: object
      properties:
