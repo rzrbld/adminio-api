@@ -79,44 +79,6 @@ func main() {
 		v1auth.Get("/callback", hdl.AuthCallback)
 	}
 
-	//deprecated, will be removed
-	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions)
-	{
-		v1.Get("/list-buckets", hdl.BuckList)
-		v1.Post("/make-bucket", hdl.BuckMake)
-		v1.Get("/list-buckets-extended", hdl.BuckListExtended)
-		v1.Post("/delete-bucket", hdl.BuckDelete)
-		v1.Post("/get-bucket-lifecycle", hdl.BuckGetLifecycle)
-		v1.Post("/set-bucket-lifecycle", hdl.BuckSetLifecycle)
-		v1.Post("/get-bucket-events", hdl.BuckGetEvents)
-		v1.Post("/set-bucket-events", hdl.BuckSetEvents)
-		v1.Post("/remove-bucket-events", hdl.BuckRemoveEvents)
-
-		v1.Get("/list-users", hdl.UsrList)
-		v1.Post("/set-status-user", hdl.UsrSetStats)
-		v1.Post("/delete-user", hdl.UsrDelete)
-		v1.Post("/add-user", hdl.UsrAdd)
-		v1.Post("/create-user-extended", hdl.UsrCreateExtended)
-		v1.Post("/set-user", hdl.UsrSet)
-
-		v1.Get("/list-policies", hdl.PolList)
-		v1.Post("/add-policy", hdl.PolAdd)
-		v1.Post("/delete-policy", hdl.PolDelete)
-		v1.Post("/set-policy", hdl.PolSet)
-
-		v1.Post("/set-status-group", hdl.GrSetStatus)
-		v1.Post("/get-description-group", hdl.GrSetDescription)
-		v1.Post("/update-members-group", hdl.GrUpdateMembers)
-		v1.Get("/list-groups", hdl.GrList)
-
-		v1.Get("/server-info", hdl.ServerInfo)
-		v1.Get("/disk-info", hdl.DiskInfo)
-
-		v1.Post("/get-kv", hdl.KvGet)
-
-	}
-	// -------------------------------------------
-
 	v2 := app.Party("/api/v2", crs).AllowMethods(iris.MethodOptions)
 	{
 		v2.Get("/buckets/list", hdl.BuckList)

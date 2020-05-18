@@ -4,11 +4,9 @@ Here is a Web UI for this API - [adminio-ui](https://github.com/rzrbld/adminio-u
 
 ![Docker hub stats](https://img.shields.io/docker/pulls/rzrbld/adminio-api?style=flat-square) ![GitHub License](https://img.shields.io/github/license/rzrbld/adminio-api?style=flat-square)
 
+## OpenAPI v3
 
-### Breaking changes in 0.9 version
-
- - env renamed: API_HOST_PORT > ADMINIO_HOST_PORT
- - API version v1 is depicated and soon will be removed.
+see OpenAPI v3 specs at `openAPI/openapi_v3.yaml` or [html version](https://rzrbld.github.io/openapi/)
 
 ### Run full stack demo
 obtain [docker-compose.yml](https://raw.githubusercontent.com/rzrbld/adminio-ui/master/docker-compose.yml) from [adminio-ui](https://github.com/rzrbld/adminio-ui) repository. And run it:
@@ -33,6 +31,9 @@ docker run -d \
       rzrbld/adminio-api:latest
 
 ```
+
+### Monitoring
+Adminio-API expose metrics for [Prometheus](https://prometheus.io/) at `/metrics` if `ADMINIO_METRICS_ENABLE` is set to `true`.
 
 ### Run manually
  - [start](https://docs.min.io/) minio server
@@ -78,6 +79,7 @@ docker run -d \
  - slack
  - wso2
 
- ### example config
+
+ ### Example config
  - prometheus config for adminio metrics: `examples/prometheus.yml`
  - bucket lifecycle: `examples/lifecycle.xml`

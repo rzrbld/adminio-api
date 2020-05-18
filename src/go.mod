@@ -17,13 +17,13 @@ require (
 	github.com/iris-contrib/middleware/cors v0.0.0-20191219204441-78279b78a367
 	github.com/iris-contrib/middleware/prometheus v0.0.0-20191219204441-78279b78a367
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
-	github.com/kataras/golog v0.0.13 // indirect
+	github.com/kataras/golog v0.0.15 // indirect
 	github.com/kataras/iris/v12 v12.1.8
 	github.com/klauspost/compress v1.10.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/markbates/goth v1.64.0
 	github.com/mattn/go-colorable v0.1.6 // indirect
-	github.com/minio/minio v0.0.0-20200514221824-fe8d33452bb9
+	github.com/minio/minio v0.0.0-20200518183557-a3f41c70498c
 	github.com/minio/minio-go/v6 v6.0.55
 	github.com/montanaflynn/stats v0.6.3 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
@@ -48,7 +48,7 @@ require (
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
 	golang.org/x/net v0.0.0-20200513185701-a91f0712d120 // indirect
-	golang.org/x/sys v0.0.0-20200513112337-417ce2331b5c // indirect
+	golang.org/x/sys v0.0.0-20200515095857-1151b9dac4a9 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.56.0 // indirect
