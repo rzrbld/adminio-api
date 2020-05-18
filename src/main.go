@@ -45,7 +45,7 @@ func main() {
 
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
 	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("Version    : 0.97")
+	fmt.Println("Version    : 1.0")
 	fmt.Println("Authors    : rzrbld, 0x003e")
 	fmt.Println("License    : MIT")
 	fmt.Println("GitHub     : https://github.com/rzrbld/adminio-api")
@@ -79,44 +79,6 @@ func main() {
 		v1auth.Get("/callback", hdl.AuthCallback)
 	}
 
-	//deprecated, will be removed
-	v1 := app.Party("/api/v1", crs).AllowMethods(iris.MethodOptions)
-	{
-		v1.Get("/list-buckets", hdl.BuckList)
-		v1.Post("/make-bucket", hdl.BuckMake)
-		v1.Get("/list-buckets-extended", hdl.BuckListExtended)
-		v1.Post("/delete-bucket", hdl.BuckDelete)
-		v1.Post("/get-bucket-lifecycle", hdl.BuckGetLifecycle)
-		v1.Post("/set-bucket-lifecycle", hdl.BuckSetLifecycle)
-		v1.Post("/get-bucket-events", hdl.BuckGetEvents)
-		v1.Post("/set-bucket-events", hdl.BuckSetEvents)
-		v1.Post("/remove-bucket-events", hdl.BuckRemoveEvents)
-
-		v1.Get("/list-users", hdl.UsrList)
-		v1.Post("/set-status-user", hdl.UsrSetStats)
-		v1.Post("/delete-user", hdl.UsrDelete)
-		v1.Post("/add-user", hdl.UsrAdd)
-		v1.Post("/create-user-extended", hdl.UsrCreateExtended)
-		v1.Post("/set-user", hdl.UsrSet)
-
-		v1.Get("/list-policies", hdl.PolList)
-		v1.Post("/add-policy", hdl.PolAdd)
-		v1.Post("/delete-policy", hdl.PolDelete)
-		v1.Post("/set-policy", hdl.PolSet)
-
-		v1.Post("/set-status-group", hdl.GrSetStatus)
-		v1.Post("/get-description-group", hdl.GrSetDescription)
-		v1.Post("/update-members-group", hdl.GrUpdateMembers)
-		v1.Get("/list-groups", hdl.GrList)
-
-		v1.Get("/server-info", hdl.ServerInfo)
-		v1.Get("/disk-info", hdl.DiskInfo)
-
-		v1.Post("/get-kv", hdl.KvGet)
-
-	}
-	// -------------------------------------------
-
 	v2 := app.Party("/api/v2", crs).AllowMethods(iris.MethodOptions)
 	{
 		v2.Get("/buckets/list", hdl.BuckList)
@@ -128,6 +90,9 @@ func main() {
 		v2.Post("/bucket/get-events", hdl.BuckGetEvents)
 		v2.Post("/bucket/set-events", hdl.BuckSetEvents)
 		v2.Post("/bucket/remove-events", hdl.BuckRemoveEvents)
+		v2.Post("/bucket/set-quota", hdl.BuckSetQuota)
+		v2.Post("/bucket/get-quota", hdl.BuckGetQuota)
+		v2.Post("/bucket/remove-quota", hdl.BuckRemoveQuota)
 
 		v2.Get("/users/list", hdl.UsrList)
 		v2.Post("/user/set-status", hdl.UsrSetStats)

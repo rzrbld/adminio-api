@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	log "log"
+	"strconv"
 	"strings"
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
+	madmin "github.com/minio/minio/pkg/madmin"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
 )
@@ -23,9 +26,11 @@ var BuckListExtended = func(ctx iris.Context) {
 	for _, bucket := range lb {
 		bn, err := minioClnt.GetBucketNotification(bucket.Name)
 		if err != nil {
-			log.Print("Error while getting bucket notification")
+			log.Print("Error while getting bucket notification", err)
 		}
-		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn}
+		bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
+
+		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq}
 		allBuckets = append(allBuckets, br)
 	}
 
@@ -150,6 +155,46 @@ var BuckRemoveEvents = func(ctx iris.Context) {
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		err := minioClnt.RemoveAllBucketNotification(bucket)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckSetQuota = func(ctx iris.Context) {
+
+	var bucket = ctx.FormValue("bucketName")
+	var quotaType = madmin.QuotaType(strings.ToLower(ctx.FormValue("quotaType")))
+	var quotaStr = ctx.FormValue("quotaValue")
+	var quota, _ = strconv.ParseUint(quotaStr, 10, 64)
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = madmClnt.SetBucketQuota(context.Background(), bucket, quota, quotaType)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckGetQuota = func(ctx iris.Context) {
+	var bucket = ctx.FormValue("bucketName")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		bq, err := madmClnt.GetBucketQuota(context.Background(), bucket)
+		var res = resph.BodyResHandler(ctx, err, bq)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckRemoveQuota = func(ctx iris.Context) {
+	var bucket = ctx.FormValue("bucketName")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := madmClnt.RemoveBucketQuota(context.Background(), bucket)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
