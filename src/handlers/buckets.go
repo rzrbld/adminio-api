@@ -29,8 +29,15 @@ var BuckListExtended = func(ctx iris.Context) {
 			log.Print("Error while getting bucket notification", err)
 		}
 		bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
+		bt, bterr := minioClnt.GetBucketTagging(bucket.Name)
 
-		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq}
+		btMap := map[string]string{}
+
+		if bterr == nil {
+			btMap = bt.ToMap()
+		}
+
+		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap}
 		allBuckets = append(allBuckets, br)
 	}
 
@@ -168,9 +175,10 @@ var BuckSetQuota = func(ctx iris.Context) {
 	var quotaType = madmin.QuotaType(strings.ToLower(ctx.FormValue("quotaType")))
 	var quotaStr = ctx.FormValue("quotaValue")
 	var quota, _ = strconv.ParseUint(quotaStr, 10, 64)
+	bucketQuota := &madmin.BucketQuota{Quota: quota, Type: quotaType}
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = madmClnt.SetBucketQuota(context.Background(), bucket, quota, quotaType)
+		err = madmClnt.SetBucketQuota(context.Background(), bucket, bucketQuota)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -192,9 +200,11 @@ var BuckGetQuota = func(ctx iris.Context) {
 
 var BuckRemoveQuota = func(ctx iris.Context) {
 	var bucket = ctx.FormValue("bucketName")
+	var quota, _ = strconv.ParseUint("0", 10, 64)
+	bucketQuota := &madmin.BucketQuota{Quota: quota}
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err := madmClnt.RemoveBucketQuota(context.Background(), bucket)
+		err = madmClnt.SetBucketQuota(context.Background(), bucket, bucketQuota)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
