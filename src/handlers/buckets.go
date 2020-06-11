@@ -9,6 +9,7 @@ import (
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
+	"github.com/minio/minio-go/v6/pkg/tags"
 	madmin "github.com/minio/minio/pkg/madmin"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
@@ -29,7 +30,7 @@ var BuckListExtended = func(ctx iris.Context) {
 			log.Print("Error while getting bucket notification", err)
 		}
 		bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
-		bt, bterr := minioClnt.GetBucketTagging(bucket.Name)
+		bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucket.Name)
 
 		btMap := map[string]string{}
 
@@ -43,6 +44,25 @@ var BuckListExtended = func(ctx iris.Context) {
 
 	var res = resph.BodyResHandler(ctx, err, allBuckets)
 	ctx.JSON(res)
+}
+
+var BuckSetTags = func(ctx iris.Context)  {
+	var bucketName = ctx.FormValue("bucketName")
+	var tagsString = ctx.FormValue("bucketTags")
+
+	bucketTags, err := tags.Parse(tagsString, true)
+
+	if err != nil {
+		log.Print("Error while getting bucket notification", err)
+	}
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := minioClnt.SetBucketTaggingWithContext(context.Background(), bucketName, bucketTags)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
 }
 
 var BuckMake = func(ctx iris.Context) {
