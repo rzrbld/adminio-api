@@ -402,11 +402,39 @@ paths:
                   format: string
       responses:
         '200':
-          description: bucket quota
+          description: bucket tags
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BucketTags"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/get-policy:
+    post:
+      summary: Get bucket policy
+      operationId: getBucketPolicy
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: bucket policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BucketPolicy"
         default:
           description: unexpected error
           content:
@@ -1091,6 +1119,11 @@ components:
          type: string
     BucketTags:
      type: object
+    BucketPolicy:
+     type: object
+     properties:
+       policy:
+         type: string
     BucketInfo:
      type: object
      properties:

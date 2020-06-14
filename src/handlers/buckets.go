@@ -251,3 +251,16 @@ var BuckRemoveQuota = func(ctx iris.Context) {
 		ctx.JSON(resph.DefaultAuthError())
 	}
 }
+
+var BuckGetPolicy = func(ctx iris.Context) {
+	var bucketName = ctx.FormValue("bucketName")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		bp, err := minioClnt.GetBucketPolicyWithContext(context.Background(), bucketName)
+		respBp := iris.Map{"policy": bp}
+		var res = resph.BodyResHandler(ctx, err, respBp)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
