@@ -46,7 +46,7 @@ var BuckListExtended = func(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
-var BuckSetTags = func(ctx iris.Context)  {
+var BuckSetTags = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 	var tagsString = ctx.FormValue("bucketTags")
 
@@ -65,7 +65,7 @@ var BuckSetTags = func(ctx iris.Context)  {
 	}
 }
 
-var BuckGetTags = func(ctx iris.Context)  {
+var BuckGetTags = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
