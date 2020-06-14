@@ -53,13 +53,33 @@ var BuckSetTags = func(ctx iris.Context)  {
 	bucketTags, err := tags.Parse(tagsString, true)
 
 	if err != nil {
-		log.Print("Error while getting bucket notification", err)
+		log.Print("Error while parse bucket tags", err)
 	}
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		err := minioClnt.SetBucketTaggingWithContext(context.Background(), bucketName, bucketTags)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
+
+var BuckGetTags = func(ctx iris.Context)  {
+	var bucketName = ctx.FormValue("bucketName")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucketName)
+
+		btMap := map[string]string{}
+
+		if bterr == nil {
+			btMap = bt.ToMap()
+		}
+
+		var res = resph.BodyResHandler(ctx, err, btMap)
+		ctx.JSON(res)
+
 	} else {
 		ctx.JSON(resph.DefaultAuthError())
 	}

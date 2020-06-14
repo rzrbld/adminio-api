@@ -1,7 +1,7 @@
 openapi: "3.0.0"
 info:
   description: "Adminio API"
-  version: "2.0.0"
+  version: "2.3.0"
   title: "Adminio API"
   contact:
     name: "rzrbld at github.com"
@@ -347,6 +347,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/set-tags:
+    post:
+      summary: Set bucket tags
+      operationId: setBucketTags
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+                bucketTags:
+                  description: comma separated list of tags. e.g. `tag1=value1&tag2=value2`
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/get-tags:
+    post:
+      summary: Get bucket tags
+      operationId: getBucketTags
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: bucket quota
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BucketTags"
         default:
           description: unexpected error
           content:
@@ -1029,6 +1089,8 @@ components:
          type: integer
        quotatype:
          type: string
+    BucketTags:
+     type: object
     BucketInfo:
      type: object
      properties:
@@ -1051,6 +1113,8 @@ components:
            $ref: "#/components/schemas/BucketInfo"
          quota:
            $ref: "#/components/schemas/BucketQuota"
+         tags:
+           $ref: "#/components/schemas/BucketTags"
     BucketLifecycle:
       type: string
     Error:
@@ -1068,4 +1132,3 @@ components:
       properties:
         Success:
           type: string
-          
