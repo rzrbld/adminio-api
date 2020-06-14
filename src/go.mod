@@ -26,23 +26,24 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/markbates/goth v1.64.1
 	github.com/mattn/go-colorable v0.1.6 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.3 // indirect
 	github.com/minio/hdfs/v3 v3.0.1 // indirect
 	github.com/minio/lsync v1.0.1 // indirect
-	github.com/minio/minio v0.0.0-20200611211130-96ed0991b5fe
-	github.com/minio/minio-go/v6 v6.0.57
+	github.com/minio/minio v0.0.0-20200614184039-41a793874879
+	github.com/minio/minio-go/v6 v6.0.58-0.20200612001654-a57fec8037ec
 	github.com/montanaflynn/stats v0.6.3 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/onsi/ginkgo v1.12.3 // indirect
+	github.com/onsi/ginkgo v1.13.0 // indirect
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/common v0.10.0 // indirect
-	github.com/prometheus/procfs v0.1.1 // indirect
+	github.com/prometheus/procfs v0.1.3 // indirect
 	github.com/rzrbld/goth-provider-wso2 v0.0.0-20200321130802-e588ec0a9128
 	github.com/secure-io/sio-go v0.3.1 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shirou/gopsutil v2.20.5+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/smartystreets/assertions v1.1.0 // indirect
+	github.com/smartystreets/assertions v1.1.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/valyala/fasthttp v1.14.0 // indirect
