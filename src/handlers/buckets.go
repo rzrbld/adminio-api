@@ -6,6 +6,7 @@ import (
 	log "log"
 	"strconv"
 	"strings"
+	"encoding/json"
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
@@ -13,7 +14,10 @@ import (
 	madmin "github.com/minio/minio/pkg/madmin"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
+	policy "github.com/minio/minio-go/v6/pkg/policy"
 )
+
+type accessPerms string
 
 var BuckList = func(ctx iris.Context) {
 	lb, err := minioClnt.ListBuckets()
@@ -265,13 +269,50 @@ var BuckGetPolicy = func(ctx iris.Context) {
 	}
 }
 
+func stringToPolicy(strPolicy string) string {
+	policy := ""
+	switch strPolicy {
+	case "none":
+			policy = "none"
+		case "download":
+			policy = "readonly"
+		case "upload":
+			policy = "writeonly"
+		case "public":
+			policy = "readwrite"
+		case "custom":
+			policy = "custom"
+	}
+	return policy
+}
+
+func isJSON(s string) bool {
+    var js map[string]interface{}
+    return json.Unmarshal([]byte(s), &js) == nil
+}
+
 var BuckSetPolicy = func(ctx iris.Context) {
 
 	var bucket = ctx.FormValue("bucketName")
-	var policy = ctx.FormValue("bucketPolicy")
+	var policyStr = ctx.FormValue("bucketPolicy")
+
+	if !isJSON(policyStr){
+		if policyStr == "none" {
+			policyStr = ""
+		} else {
+			bucketPolicy := stringToPolicy(policyStr)
+			var p = policy.BucketAccessPolicy{Version: "2012-10-17"}
+			p.Statements = policy.SetPolicy(p.Statements, policy.BucketPolicy(bucketPolicy), bucket, "")
+			policyJSON, err := json.Marshal(p)
+			if err != nil {
+				fmt.Println("Error marshal json", err, string(policyJSON))
+			}
+			policyStr = string(policyJSON)
+		}
+	}
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		err = minioClnt.SetBucketPolicyWithContext(context.Background(), bucket, policy)
+		err = minioClnt.SetBucketPolicyWithContext(context.Background(), bucket, policyStr)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
