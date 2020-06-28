@@ -44,7 +44,7 @@ var BuckListExtended = func(ctx iris.Context) {
 			btMap = bt.ToMap()
 		}
 
-		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy-name": pName}
+		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy": pName}
 		allBuckets = append(allBuckets, br)
 	}
 

@@ -1182,7 +1182,7 @@ components:
            $ref: "#/components/schemas/BucketQuota"
          tags:
            $ref: "#/components/schemas/BucketTags"
-         policy-name:
+         policy:
            type: string
     BucketLifecycle:
       type: string
