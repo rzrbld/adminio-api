@@ -96,6 +96,7 @@ func main() {
 		v2.Post("/bucket/set-tags", hdl.BuckSetTags)
 		v2.Post("/bucket/get-tags", hdl.BuckGetTags)
 		v2.Post("/bucket/get-policy", hdl.BuckGetPolicy)
+		v2.Post("/bucket/set-policy", hdl.BuckSetPolicy)
 
 		v2.Get("/users/list", hdl.UsrList)
 		v2.Post("/user/set-status", hdl.UsrSetStats)

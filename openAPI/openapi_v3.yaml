@@ -441,6 +441,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /bucket/set-policy:
+    post:
+      summary: Set bucket policy
+      operationId: setBucketPolicy
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+                bucketPolicy:
+                  description: predefined values none, upload, download, public or custom json string
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /users/list:
     get:
       summary: List all users
@@ -1165,3 +1197,4 @@ components:
       properties:
         Success:
           type: string
+          

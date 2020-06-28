@@ -264,3 +264,17 @@ var BuckGetPolicy = func(ctx iris.Context) {
 		ctx.JSON(resph.DefaultAuthError())
 	}
 }
+
+var BuckSetPolicy = func(ctx iris.Context) {
+
+	var bucket = ctx.FormValue("bucketName")
+	var policy = ctx.FormValue("bucketPolicy")
+
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err = minioClnt.SetBucketPolicyWithContext(context.Background(), bucket, policy)
+		var res = resph.DefaultResHandler(ctx, err)
+		ctx.JSON(res)
+	} else {
+		ctx.JSON(resph.DefaultAuthError())
+	}
+}
