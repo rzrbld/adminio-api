@@ -277,14 +277,17 @@ func getPolicyWithName(bucketName string) (string, string, error) {
 	var p policy.BucketAccessPolicy
 
 	bp, err := minioClnt.GetBucketPolicyWithContext(context.Background(), bucketName)
-	if err = json.Unmarshal([]byte(bp), &p); err != nil {
-		fmt.Println("Error Unmarshal policy")
+	policyShort := "none"
+	if bp != "" {
+		if err = json.Unmarshal([]byte(bp), &p); err != nil {
+			fmt.Println("Error Unmarshal policy")
+		}
+		pName := string(policy.GetPolicy(p.Statements, bucketName, ""))
+		if pName == string(policy.BucketPolicyNone) && bp != "" {
+			pName = "custom"
+		}
+		policyShort = policyToString(pName)
 	}
-	pName := string(policy.GetPolicy(p.Statements, bucketName, ""))
-	if pName == string(policy.BucketPolicyNone) && bp != "" {
-		pName = "custom"
-	}
-	var policyShort = policyToString(pName)
 
 	return policyShort, bp, err
 }
