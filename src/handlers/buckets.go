@@ -36,13 +36,15 @@ var BuckListExtended = func(ctx iris.Context) {
 		bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
 		bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucket.Name)
 
+		pName, _, _ := getPolicyWithName(bucket.Name)
+
 		btMap := map[string]string{}
 
 		if bterr == nil {
 			btMap = bt.ToMap()
 		}
 
-		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap}
+		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy-name": pName}
 		allBuckets = append(allBuckets, br)
 	}
 
@@ -260,13 +262,48 @@ var BuckGetPolicy = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
 	if resph.CheckAuthBeforeRequest(ctx) != false {
-		bp, err := minioClnt.GetBucketPolicyWithContext(context.Background(), bucketName)
-		respBp := iris.Map{"policy": bp}
+		pName, bp, err := getPolicyWithName(bucketName)
+
+		fmt.Println("POLICY GET", pName)
+		respBp := iris.Map{"policy":bp, "name":pName}
 		var res = resph.BodyResHandler(ctx, err, respBp)
 		ctx.JSON(res)
 	} else {
 		ctx.JSON(resph.DefaultAuthError())
 	}
+}
+
+func getPolicyWithName(bucketName string) (string, string, error) {
+	var p policy.BucketAccessPolicy
+
+	bp, err := minioClnt.GetBucketPolicyWithContext(context.Background(), bucketName)
+	if err = json.Unmarshal([]byte(bp), &p); err != nil {
+		fmt.Println("Error Unmarshal policy")
+	}
+	pName := string(policy.GetPolicy(p.Statements, bucketName, ""))
+	if pName == string(policy.BucketPolicyNone) && bp != "" {
+		pName = "custom"
+	}
+	var policyShort = policyToString(pName)
+
+	return policyShort, bp, err
+}
+
+func policyToString(policyName string) string {
+	name := ""
+	switch policyName {
+	case "none":
+			name = "none"
+		case "readonly":
+			name = "download"
+		case "writeonly":
+			name = "upload"
+		case "readwrite":
+			name = "public"
+		case "custom":
+			name = "custom"
+	}
+	return name
 }
 
 func stringToPolicy(strPolicy string) string {

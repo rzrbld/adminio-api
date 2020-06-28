@@ -1156,6 +1156,8 @@ components:
      properties:
        policy:
          type: string
+       name:
+         type: string
     BucketInfo:
      type: object
      properties:
@@ -1180,6 +1182,8 @@ components:
            $ref: "#/components/schemas/BucketQuota"
          tags:
            $ref: "#/components/schemas/BucketTags"
+         policy-name:
+           type: string
     BucketLifecycle:
       type: string
     Error:
