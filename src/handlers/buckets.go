@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"encoding/json"
+	"sync"
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
@@ -82,31 +83,40 @@ var BuckList = func(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
-var BuckListExtended = func(ctx iris.Context) {
-	lb, err := minioClnt.ListBuckets()
-	allBuckets := []interface{}{}
-	for _, bucket := range lb {
-		bn, err := minioClnt.GetBucketNotification(bucket.Name)
-		if err != nil {
-			log.Print("Error while getting bucket notification", err)
-		}
-		bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
-		bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucket.Name)
+var BuckListExtended = func(ctx iris.Context)  {
 
-		pName, _, _ := getPolicyWithName(bucket.Name)
+	var wg sync.WaitGroup
 
-		btMap := map[string]string{}
+		lb, err := minioClnt.ListBuckets()
+		allBuckets := make([]iris.Map, len(lb))
 
-		if bterr == nil {
-			btMap = bt.ToMap()
-		}
+    wg.Add(len(lb))
+    for i := 0; i < len(lb); i++ {
+			go func(i int) {
+				bucket := lb[i]
+				bn, err := minioClnt.GetBucketNotification(bucket.Name)
+				if err != nil {
+					log.Print("Error while getting bucket notification", err)
+				}
+				bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
+				bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucket.Name)
 
-		br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy": pName}
-		allBuckets = append(allBuckets, br)
-	}
+				pName, _, _ := getPolicyWithName(bucket.Name)
 
-	var res = resph.BodyResHandler(ctx, err, allBuckets)
-	ctx.JSON(res)
+				btMap := map[string]string{}
+
+				if bterr == nil {
+					btMap = bt.ToMap()
+				}
+
+				br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy": pName}
+				allBuckets[i] = br
+				wg.Done()
+			}(i)
+    }
+    wg.Wait()
+		var res = resph.BodyResHandler(ctx, err, allBuckets)
+		ctx.JSON(res)
 }
 
 var BuckSetTags = func(ctx iris.Context) {
@@ -321,7 +331,6 @@ var BuckGetPolicy = func(ctx iris.Context) {
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		pName, bp, err := getPolicyWithName(bucketName)
 
-		fmt.Println("POLICY GET", pName)
 		respBp := iris.Map{"policy":bp, "name":pName}
 		var res = resph.BodyResHandler(ctx, err, respBp)
 		ctx.JSON(res)
