@@ -17,7 +17,64 @@ import (
 	policy "github.com/minio/minio-go/v6/pkg/policy"
 )
 
-type accessPerms string
+func getPolicyWithName(bucketName string) (string, string, error) {
+	var p policy.BucketAccessPolicy
+
+	bp, err := minioClnt.GetBucketPolicyWithContext(context.Background(), bucketName)
+	policyShort := "none"
+	if bp != "" {
+		if err = json.Unmarshal([]byte(bp), &p); err != nil {
+			fmt.Println("Error Unmarshal policy")
+		}
+		pName := string(policy.GetPolicy(p.Statements, bucketName, ""))
+		if pName == string(policy.BucketPolicyNone) && bp != "" {
+			pName = "custom"
+		}
+		policyShort = policyToString(pName)
+	}
+
+	return policyShort, bp, err
+}
+
+func policyToString(policyName string) string {
+	name := ""
+	switch policyName {
+	case "none":
+			name = "none"
+		case "readonly":
+			name = "download"
+		case "writeonly":
+			name = "upload"
+		case "readwrite":
+			name = "public"
+		case "custom":
+			name = "custom"
+	}
+	return name
+}
+
+func stringToPolicy(strPolicy string) string {
+	policy := ""
+	switch strPolicy {
+	case "none":
+			policy = "none"
+		case "download":
+			policy = "readonly"
+		case "upload":
+			policy = "writeonly"
+		case "public":
+			policy = "readwrite"
+		case "custom":
+			policy = "custom"
+	}
+	return policy
+}
+
+func isJSON(s string) bool {
+    var js map[string]interface{}
+    return json.Unmarshal([]byte(s), &js) == nil
+}
+
 
 var BuckList = func(ctx iris.Context) {
 	lb, err := minioClnt.ListBuckets()
@@ -271,64 +328,6 @@ var BuckGetPolicy = func(ctx iris.Context) {
 	} else {
 		ctx.JSON(resph.DefaultAuthError())
 	}
-}
-
-func getPolicyWithName(bucketName string) (string, string, error) {
-	var p policy.BucketAccessPolicy
-
-	bp, err := minioClnt.GetBucketPolicyWithContext(context.Background(), bucketName)
-	policyShort := "none"
-	if bp != "" {
-		if err = json.Unmarshal([]byte(bp), &p); err != nil {
-			fmt.Println("Error Unmarshal policy")
-		}
-		pName := string(policy.GetPolicy(p.Statements, bucketName, ""))
-		if pName == string(policy.BucketPolicyNone) && bp != "" {
-			pName = "custom"
-		}
-		policyShort = policyToString(pName)
-	}
-
-	return policyShort, bp, err
-}
-
-func policyToString(policyName string) string {
-	name := ""
-	switch policyName {
-	case "none":
-			name = "none"
-		case "readonly":
-			name = "download"
-		case "writeonly":
-			name = "upload"
-		case "readwrite":
-			name = "public"
-		case "custom":
-			name = "custom"
-	}
-	return name
-}
-
-func stringToPolicy(strPolicy string) string {
-	policy := ""
-	switch strPolicy {
-	case "none":
-			policy = "none"
-		case "download":
-			policy = "readonly"
-		case "upload":
-			policy = "writeonly"
-		case "public":
-			policy = "readwrite"
-		case "custom":
-			policy = "custom"
-	}
-	return policy
-}
-
-func isJSON(s string) bool {
-    var js map[string]interface{}
-    return json.Unmarshal([]byte(s), &js) == nil
 }
 
 var BuckSetPolicy = func(ctx iris.Context) {
