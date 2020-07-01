@@ -28,7 +28,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.3 // indirect
 	github.com/minio/hdfs/v3 v3.0.1 // indirect
 	github.com/minio/lsync v1.0.1 // indirect
-	github.com/minio/minio v0.0.0-20200628185605-8c5f0597c059
+	github.com/minio/minio v0.0.0-20200630183019-d2d1ebe0849b
 	github.com/minio/minio-go/v6 v6.0.58-0.20200612001654-a57fec8037ec
 	github.com/montanaflynn/stats v0.6.3 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/rzrbld/goth-provider-wso2 v0.0.0-20200321130802-e588ec0a9128
 	github.com/secure-io/sio-go v0.3.1 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/shirou/gopsutil v2.20.5+incompatible // indirect
+	github.com/shirou/gopsutil v2.20.6+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/smartystreets/assertions v1.1.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect

@@ -2,20 +2,20 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	log "log"
 	"strconv"
 	"strings"
-	"encoding/json"
 	"sync"
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v6"
+	policy "github.com/minio/minio-go/v6/pkg/policy"
 	"github.com/minio/minio-go/v6/pkg/tags"
 	madmin "github.com/minio/minio/pkg/madmin"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
-	policy "github.com/minio/minio-go/v6/pkg/policy"
 )
 
 func getPolicyWithName(bucketName string) (string, string, error) {
@@ -41,15 +41,15 @@ func policyToString(policyName string) string {
 	name := ""
 	switch policyName {
 	case "none":
-			name = "none"
-		case "readonly":
-			name = "download"
-		case "writeonly":
-			name = "upload"
-		case "readwrite":
-			name = "public"
-		case "custom":
-			name = "custom"
+		name = "none"
+	case "readonly":
+		name = "download"
+	case "writeonly":
+		name = "upload"
+	case "readwrite":
+		name = "public"
+	case "custom":
+		name = "custom"
 	}
 	return name
 }
@@ -58,24 +58,23 @@ func stringToPolicy(strPolicy string) string {
 	policy := ""
 	switch strPolicy {
 	case "none":
-			policy = "none"
-		case "download":
-			policy = "readonly"
-		case "upload":
-			policy = "writeonly"
-		case "public":
-			policy = "readwrite"
-		case "custom":
-			policy = "custom"
+		policy = "none"
+	case "download":
+		policy = "readonly"
+	case "upload":
+		policy = "writeonly"
+	case "public":
+		policy = "readwrite"
+	case "custom":
+		policy = "custom"
 	}
 	return policy
 }
 
 func isJSON(s string) bool {
-    var js map[string]interface{}
-    return json.Unmarshal([]byte(s), &js) == nil
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
 }
-
 
 var BuckList = func(ctx iris.Context) {
 	lb, err := minioClnt.ListBuckets()
@@ -83,40 +82,40 @@ var BuckList = func(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
-var BuckListExtended = func(ctx iris.Context)  {
+var BuckListExtended = func(ctx iris.Context) {
 
 	var wg sync.WaitGroup
 
-		lb, err := minioClnt.ListBuckets()
-		allBuckets := make([]iris.Map, len(lb))
+	lb, err := minioClnt.ListBuckets()
+	allBuckets := make([]iris.Map, len(lb))
 
-    wg.Add(len(lb))
-    for i := 0; i < len(lb); i++ {
-			go func(i int) {
-				bucket := lb[i]
-				bn, err := minioClnt.GetBucketNotification(bucket.Name)
-				if err != nil {
-					log.Print("Error while getting bucket notification", err)
-				}
-				bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
-				bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucket.Name)
+	wg.Add(len(lb))
+	for i := 0; i < len(lb); i++ {
+		go func(i int) {
+			bucket := lb[i]
+			bn, err := minioClnt.GetBucketNotification(bucket.Name)
+			if err != nil {
+				log.Print("Error while getting bucket notification", err)
+			}
+			bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
+			bt, bterr := minioClnt.GetBucketTaggingWithContext(context.Background(), bucket.Name)
 
-				pName, _, _ := getPolicyWithName(bucket.Name)
+			pName, _, _ := getPolicyWithName(bucket.Name)
 
-				btMap := map[string]string{}
+			btMap := map[string]string{}
 
-				if bterr == nil {
-					btMap = bt.ToMap()
-				}
+			if bterr == nil {
+				btMap = bt.ToMap()
+			}
 
-				br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy": pName}
-				allBuckets[i] = br
-				wg.Done()
-			}(i)
-    }
-    wg.Wait()
-		var res = resph.BodyResHandler(ctx, err, allBuckets)
-		ctx.JSON(res)
+			br := iris.Map{"name": bucket.Name, "info": bucket, "events": bn, "quota": bq, "tags": btMap, "policy": pName}
+			allBuckets[i] = br
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+	var res = resph.BodyResHandler(ctx, err, allBuckets)
+	ctx.JSON(res)
 }
 
 var BuckSetTags = func(ctx iris.Context) {
@@ -331,7 +330,7 @@ var BuckGetPolicy = func(ctx iris.Context) {
 	if resph.CheckAuthBeforeRequest(ctx) != false {
 		pName, bp, err := getPolicyWithName(bucketName)
 
-		respBp := iris.Map{"policy":bp, "name":pName}
+		respBp := iris.Map{"policy": bp, "name": pName}
 		var res = resph.BodyResHandler(ctx, err, respBp)
 		ctx.JSON(res)
 	} else {
@@ -344,7 +343,7 @@ var BuckSetPolicy = func(ctx iris.Context) {
 	var bucket = ctx.FormValue("bucketName")
 	var policyStr = ctx.FormValue("bucketPolicy")
 
-	if !isJSON(policyStr){
+	if !isJSON(policyStr) {
 		if policyStr == "none" {
 			policyStr = ""
 		} else {
