@@ -1,4 +1,6 @@
-## Adminio openAPI v3 specification
+## Adminio openAPI Specification
+
+- OpenAPI version: 3.0
 
 ### What is OpenAPI?
 
@@ -6,9 +8,13 @@ The OpenAPI Specification (OAS) defines a standard, programming language-agnosti
 
 ### How to use it?
 
-you can open and try out with this tools:
-- [Insomnia designer](https://insomnia.rest/products/designer/)
-- [Online swagger edtor](https://editor.swagger.io/)
+1. Start [adminio-api](https://github.com/rzrbld/adminio-api)
+2. Change `servers>url` in `openapi_v3.yaml` to actual adminio-api endpoint
+3. Open `openAPI/openapi_v3.yaml` in any of this tools:
+  - [Postman](https://www.postman.com/)
+  - [Insomnia designer](https://insomnia.rest/products/designer/)
+  - [Online swagger edtor](https://editor.swagger.io/)
+4. Make some API requests
 
 or can generate standalone html file with [redoc-cli](https://github.com/Redocly/redoc/blob/master/cli/README.md)
 ```
