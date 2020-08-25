@@ -21,8 +21,7 @@ func init() {
 
 	sessionsManager = sessions.New(sessions.Config{
 		Cookie: cookieName,
-		Encode: secureCookie.Encode,
-		Decode: secureCookie.Decode,
+		Encoding: secureCookie,
 	})
 }
 
