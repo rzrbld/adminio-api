@@ -6,6 +6,7 @@ require (
 	contrib.go.opencensus.io/exporter/ocagent v0.5.0 // indirect
 	github.com/CloudyKit/jet v2.1.3-0.20180809161101-62edd43e4f88+incompatible // indirect
 	github.com/CloudyKit/jet/v3 v3.0.0 // indirect
+	github.com/CloudyKit/jet/v4 v4.1.0 // indirect
 	github.com/Joker/jade v1.0.1-0.20190614124447-d475f43051e7 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/coreos/bbolt v1.3.3 // indirect
@@ -19,8 +20,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gavv/httpexpect v2.0.0+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/go-check/check v0.0.0-20200227125254-8fa46927fb4f // indirect
-	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
+	github.com/go-check/check v0.0.0-20200902074654-038fdea0a05b // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -32,27 +32,27 @@ require (
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
 	github.com/iris-contrib/blackfriday v2.0.0+incompatible // indirect
 	github.com/iris-contrib/jade v1.1.4 // indirect
-	github.com/iris-contrib/middleware/cors v0.0.0-20200810001613-32cf668f999f
-	github.com/iris-contrib/middleware/prometheus v0.0.0-20200810001613-32cf668f999f
+	github.com/iris-contrib/middleware/cors v0.0.0-20201010084130-5bd93b5f7a9a
+	github.com/iris-contrib/middleware/prometheus v0.0.0-20201010084130-5bd93b5f7a9a
+	github.com/iris-contrib/pongo2 v0.0.1 // indirect
 	github.com/jarcoal/httpmock v1.0.6 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/kataras/go-sessions/v3 v3.3.0
-	github.com/kataras/golog v0.1.2 // indirect
-	github.com/kataras/iris/v12 v12.1.9-0.20200809192844-da029d6f3722
-	github.com/klauspost/compress v1.10.11 // indirect
+	github.com/kataras/iris/v12 v12.2.0-alpha.0.20201009155300-ff7417baddc9
 	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/markbates/goth v1.64.2
-	github.com/mattn/go-colorable v0.1.7 // indirect
+	github.com/markbates/goth v1.65.0
+	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mediocregopher/mediocre-go-lib v0.0.0-20181029021733-cb65787f37ed // indirect
+	github.com/mediocregopher/radix/v3 v3.5.2 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.4 // indirect
 	github.com/minio/hdfs/v3 v3.0.1 // indirect
 	github.com/minio/lsync v1.0.1 // indirect
-	github.com/minio/minio v0.0.0-20200825193859-9acdeab73d7e
+	github.com/minio/minio v0.0.0-20201010033600-c2f16ee84624
 	github.com/minio/minio-go/v6 v6.0.58-0.20200612001654-a57fec8037ec
-	github.com/minio/minio-go/v7 v7.0.5
+	github.com/minio/minio-go/v7 v7.0.6-0.20200929220449-755b5633803a
 	github.com/minio/parquet-go v0.0.0-20200414234858-838cfa8aae61 // indirect
 	github.com/montanaflynn/stats v0.6.3 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
@@ -61,10 +61,10 @@ require (
 	github.com/nats-io/go-nats-streaming v0.4.4 // indirect
 	github.com/nats-io/nats-server v1.4.1 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/onsi/ginkgo v1.14.0 // indirect
+	github.com/nxadm/tail v1.4.5 // indirect
 	github.com/prometheus/client_golang v1.7.1
-	github.com/prometheus/common v0.13.0 // indirect
-	github.com/prometheus/procfs v0.1.3 // indirect
+	github.com/prometheus/common v0.14.0 // indirect
+	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/prometheus/tsdb v0.7.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20190704165056-9c2d0518ed81 // indirect
 	github.com/ryanuber/columnize v2.1.2+incompatible // indirect
@@ -72,14 +72,15 @@ require (
 	github.com/sclevine/agouti v3.0.0+incompatible // indirect
 	github.com/secure-io/sio-go v0.3.1 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/shirou/gopsutil v2.20.7+incompatible // indirect
+	github.com/shirou/gopsutil v2.20.9+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/smartystreets/assertions v1.1.1 // indirect
+	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5 // indirect
 	github.com/ugorji/go v1.1.5-pre // indirect
 	github.com/valyala/fasthttp v1.16.0 // indirect
+	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
@@ -87,17 +88,14 @@ require (
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	go.uber.org/zap v1.15.0 // indirect
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
-	golang.org/x/sys v0.0.0-20200824131525-c12d262b63d8 // indirect
+	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb // indirect
+	golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 // indirect
 	golang.org/x/text v0.3.3 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
-	gopkg.in/ini.v1 v1.60.1 // indirect
+	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
-	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 )
