@@ -32,13 +32,17 @@ docker run -d \
 
 ```
 
-### Monitoring
-Adminio-API expose metrics for [Prometheus](https://prometheus.io/) at `/metrics` if `ADMINIO_METRICS_ENABLE` is set to `true`.
+### Kubernetes/OpenShift/OKD/OCP
+go to [Helm carts](https://github.com/rzrbld/adminio-helm) repo
 
 ### Run manually
  - [start](https://docs.min.io/) minio server
  - set env variables
  - go to `src` folder and compile with `go build main.go`, then run `./main` binary
+
+
+### Monitoring
+Adminio-API expose metrics for [Prometheus](https://prometheus.io/) at `/metrics` if `ADMINIO_METRICS_ENABLE` is set to `true`.
 
 ### Config Env variables
 | Variable   |      Description      |  Default |
