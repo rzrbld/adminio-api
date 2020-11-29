@@ -1,7 +1,7 @@
 openapi: "3.0.0"
 info:
   description: "Adminio API"
-  version: "2.3.0"
+  version: "2.4.0"
   title: "Adminio API"
   contact:
     name: "rzrbld at github.com"
@@ -66,6 +66,11 @@ paths:
                   type: string
                   format: string
                 newBucketRegion:
+                  description: Optional parameter. if value is null value will be retrieved from ENV variable
+                  type: string
+                  format: string
+                newBucketObjectLocking:
+                  description: Optional parameter. if value is null value will be retrieved from ENV variable
                   type: string
                   format: string
       responses:
@@ -463,6 +468,98 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/set-encryption:
+    post:
+      summary: Set bucket encryption
+      operationId: setBucketEncryption
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+                bucketEncryptionType:
+                  description: available options is sse-kms ans sse-s3
+                  type: string
+                  format: string
+                kmsMasterKey:
+                  description: master key ID if use sse-kms
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/get-encryption:
+    post:
+      summary: Get bucket encryption
+      operationId: getBucketEncryption
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: bucket encryption
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BucketEncryption"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /bucket/remove-encryption:
+    post:
+      summary: Remove bucket encryption
+      operationId: removeBucketEncryption
+      tags:
+        - bucket
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  format: string
+      responses:
+        '200':
+          description: bucket encryption removed
           content:
             application/json:
               schema:
@@ -1125,7 +1222,20 @@ components:
       type: array
       items:
         type: string
-
+    BucketEncryption:
+     type: object
+     properties:
+       XMLname:
+         type: object
+         properties:
+           Space:
+             type: string
+           Local:
+             type: string
+       Rules:
+         type: array
+         items:
+           type: object
     BucketEvent:
      type: object
      properties:
@@ -1184,6 +1294,8 @@ components:
            $ref: "#/components/schemas/BucketTags"
          policy:
            type: string
+         encryption:
+            $ref: "#/components/schemas/BucketEncryption"
     BucketLifecycle:
       type: string
     Error:
@@ -1201,4 +1313,3 @@ components:
       properties:
         Success:
           type: string
-          

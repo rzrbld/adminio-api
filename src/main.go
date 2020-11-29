@@ -44,8 +44,9 @@ func main() {
 	)
 
 	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
+
 	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("Version    : 1.5")
+	fmt.Println("Version    : 1.6")
 	fmt.Println("Authors    : rzrbld, 0x003e")
 	fmt.Println("License    : MIT")
 	fmt.Println("GitHub     : https://github.com/rzrbld/adminio-api")
@@ -97,6 +98,9 @@ func main() {
 		v2.Post("/bucket/get-tags", hdl.BuckGetTags)
 		v2.Post("/bucket/get-policy", hdl.BuckGetPolicy)
 		v2.Post("/bucket/set-policy", hdl.BuckSetPolicy)
+		v2.Post("/bucket/set-encryption", hdl.BuckSetEncryption)
+		v2.Post("/bucket/get-encryption", hdl.BuckGetEncryption)
+		v2.Post("/bucket/remove-encryption", hdl.BuckRemoveEncryption)
 
 		v2.Get("/users/list", hdl.UsrList)
 		v2.Post("/user/set-status", hdl.UsrSetStats)

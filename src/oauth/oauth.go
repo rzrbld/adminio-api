@@ -20,7 +20,7 @@ func init() {
 	secureCookie := securecookie.New(hashKey, blockKey)
 
 	sessionsManager = sessions.New(sessions.Config{
-		Cookie: cookieName,
+		Cookie:   cookieName,
 		Encoding: secureCookie,
 	})
 }

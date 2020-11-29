@@ -17,11 +17,12 @@ require (
 	github.com/eapache/go-resiliency v1.2.0 // indirect
 	github.com/etcd-io/bbolt v1.3.3 // indirect
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
+	github.com/flosch/pongo2/v4 v4.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gavv/httpexpect v2.0.0+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-check/check v0.0.0-20200902074654-038fdea0a05b // indirect
-	github.com/google/go-cmp v0.5.3 // indirect
+	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
 	github.com/gorilla/securecookie v1.1.1
@@ -51,9 +52,9 @@ require (
 	github.com/minio/hdfs/v3 v3.0.1 // indirect
 	github.com/minio/lsync v1.0.1 // indirect
 	github.com/minio/md5-simd v1.1.1 // indirect
-	github.com/minio/minio v0.0.0-20201117171328-7ff8128f15ce
+	github.com/minio/minio v0.0.0-20201129051545-bdd094bc3927
 	github.com/minio/minio-go/v6 v6.0.58-0.20200612001654-a57fec8037ec
-	github.com/minio/minio-go/v7 v7.0.6-0.20200929220449-755b5633803a
+	github.com/minio/minio-go/v7 v7.0.6
 	github.com/minio/parquet-go v0.0.0-20200414234858-838cfa8aae61 // indirect
 	github.com/montanaflynn/stats v0.6.3 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
@@ -80,11 +81,12 @@ require (
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/square/go-jose/v3 v3.0.0-20200630053402-0a67ce9b0693 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/tdewolff/parse/v2 v2.5.6 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5 // indirect
 	github.com/ugorji/go v1.1.5-pre // indirect
 	github.com/valyala/fasthttp v1.16.0 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.11 // indirect
-	github.com/vmihailenco/msgpack/v5 v5.0.0-rc.5 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.0.0 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
@@ -93,15 +95,16 @@ require (
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	go.uber.org/zap v1.15.0 // indirect
-	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
+	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58 // indirect
-	golang.org/x/sys v0.0.0-20201117222635-ba5294a509c7 // indirect
+	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201128035030-22ab2dfb190c // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )

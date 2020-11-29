@@ -6,13 +6,15 @@ import (
 )
 
 var (
-	Server         = getEnv("MINIO_HOST_PORT", "localhost:9000")
-	Maccess        = getEnv("MINIO_ACCESS", "test")
-	Msecret        = getEnv("MINIO_SECRET", "testtest123")
-	Region         = getEnv("MINIO_REGION", "us-east-1")
-	Ssl, _         = strconv.ParseBool(getEnv("MINIO_SSL", "false"))
-	ServerHostPort = getEnv("ADMINIO_HOST_PORT", "localhost:8080")
-	AdminioCORS    = getEnv("ADMINIO_CORS_DOMAIN", "*")
+	Server  = getEnv("MINIO_HOST_PORT", "localhost:9000")
+	Maccess = getEnv("MINIO_ACCESS", "test")
+	Msecret = getEnv("MINIO_SECRET", "testtest123")
+	Region  = getEnv("MINIO_REGION", "us-east-1")
+	// Enable object locking by default
+	DefaultObjectLocking, _ = strconv.ParseBool(getEnv("MINIO_DEFAULT_LOCK_OBLECT_ENABLE", "false"))
+	Ssl, _                  = strconv.ParseBool(getEnv("MINIO_SSL", "false"))
+	ServerHostPort          = getEnv("ADMINIO_HOST_PORT", "localhost:8080")
+	AdminioCORS             = getEnv("ADMINIO_CORS_DOMAIN", "*")
 	// AES only supports key sizes of 16, 24 or 32 bytes.
 	// You either need to provide exactly that amount or you derive the key from what you type in.
 	ScHashKey  = getEnv("ADMINIO_COOKIE_HASH_KEY", "NRUeuq6AdskNPa7ewZuxG9TrDZC4xFat")

@@ -53,6 +53,7 @@ Adminio-API expose metrics for [Prometheus](https://prometheus.io/) at `/metrics
 | `MINIO_REGION` | set minio region | us-east-1 |
 | `MINIO_ACCESS` | set minio Access Key | test |
 | `MINIO_SECRET` | set minio Secret Key | testtest123 |
+| `MINIO_DEFAULT_LOCK_OBLECT_ENABLE` | set minio default make bucket behaviour with locking object  | false |
 | `ADMINIO_CORS_DOMAIN` | set adminio-api CORS policy domain  | * |
 | `ADMINIO_OAUTH_ENABLE` | enable oauth over supported providers | false |
 | `ADMINIO_OAUTH_PROVIDER` | oauth provider, for more information see the full list of supported providers | github |
