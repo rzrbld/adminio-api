@@ -32,8 +32,8 @@ docker run -d \
 
 ```
 
-### Kubernetes/OpenShift/OKD/OCP
-go to [Helm carts](https://github.com/rzrbld/adminio-helm) repo
+### Run with Kubernetes/OpenShift/OKD/OCP
+go to [Helm charts](https://github.com/rzrbld/adminio-helm) repo
 
 ### Run manually
  - [start](https://docs.min.io/) minio server
