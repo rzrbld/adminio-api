@@ -65,7 +65,7 @@ Adminio-API expose metrics for [Prometheus](https://prometheus.io/) at `/metrics
 | `ADMINIO_COOKIE_BLOCK_KEY` | block key for session cookies. AES only supports key sizes of 16, 24 or 32 bytes | bnfYuphzxPhJMR823YNezH83fuHuddFC |
 | `ADMINIO_COOKIE_NAME` | name for the session cookie | adminiosessionid |
 | `ADMINIO_AUDIT_LOG_ENABLE` | enable audit log, mae sense if oauth is enabled, othervise set to false | false |
-| `ADMINIO_METRICS_ENABLE` | enable default iris/golang metrics and bucket sizes metric on `/metric/` uri path | false |
+| `ADMINIO_METRICS_ENABLE` | enable default iris/golang metrics and bucket sizes metric on `/metrics/` uri path | false |
 | `ADMINIO_PROBES_ENABLE` | enable liveness and readiness probes for k8s at `/ready/` and `/live/` uri path installations | false |
 
 ### List of supported oauth providers
