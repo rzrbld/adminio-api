@@ -1,6 +1,6 @@
 module github.com/rzrbld/adminio-api
 
-go 1.14
+go 1.16
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.5.0 // indirect
