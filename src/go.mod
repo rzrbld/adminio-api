@@ -22,7 +22,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/markbates/goth v1.67.1
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio v0.0.0-20210323145707-da70e6ddf63c
+	github.com/minio/minio v0.0.0-20210324172527-749e9c577119
 	github.com/minio/minio-go/v7 v7.0.11-0.20210302210017-6ae69c73ce78
 	github.com/montanaflynn/stats v0.6.5 // indirect
 	github.com/prometheus/client_golang v1.10.0
@@ -35,12 +35,12 @@ require (
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tdewolff/minify/v2 v2.9.15 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
-	github.com/vmihailenco/msgpack/v5 v5.3.0 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.1 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
-	golang.org/x/net v0.0.0-20210323141857-08027d57d8cf // indirect
+	golang.org/x/net v0.0.0-20210324051636-2c4c8ecb7826 // indirect
 	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558 // indirect
-	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4 // indirect
+	golang.org/x/sys v0.0.0-20210324051608-47abb6519492 // indirect
 	golang.org/x/text v0.3.5 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	google.golang.org/appengine v1.6.7 // indirect

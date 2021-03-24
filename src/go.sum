@@ -495,6 +495,8 @@ github.com/minio/minio v0.0.0-20210223002953-2a79ea033206 h1:ZAU+MmV8riIfYUYbAOz
 github.com/minio/minio v0.0.0-20210223002953-2a79ea033206/go.mod h1:4vAxM6qZ/D1cj3qw18iJc8/1QFBOWkI04XtgdDDmMyU=
 github.com/minio/minio v0.0.0-20210323145707-da70e6ddf63c h1:lb7GdvODR1AlzBbznujQ2A7bto9PM1Y8eVgm+phevcw=
 github.com/minio/minio v0.0.0-20210323145707-da70e6ddf63c/go.mod h1:jrzwhnIGLEW3SlnjiM+roLgxIr0jPTYQXZnG+NMFMHU=
+github.com/minio/minio v0.0.0-20210324172527-749e9c577119 h1:4HpYXHKb5B73pHt9263vhmUkYr80CdrKqgLCNyV/DW0=
+github.com/minio/minio v0.0.0-20210324172527-749e9c577119/go.mod h1:jrzwhnIGLEW3SlnjiM+roLgxIr0jPTYQXZnG+NMFMHU=
 github.com/minio/minio-go/v7 v7.0.10 h1:1oUKe4EOPUEhw2qnPQaPsJ0lmVTYLFu03SiItauXs94=
 github.com/minio/minio-go/v7 v7.0.10/go.mod h1:td4gW1ldOsj1PbSNS+WYK43j+P1XVhX/8W8awaYlBFo=
 github.com/minio/minio-go/v7 v7.0.11-0.20210302210017-6ae69c73ce78 h1:v7OMbUnWkyRlO2MZ5AuYioELhwXF/BgZEznrQ1drBEM=
@@ -743,6 +745,8 @@ github.com/vmihailenco/msgpack/v5 v5.2.0 h1:ZhIAtVUP1mme8GIlpiAnmTzjSWMexA/uNF2W
 github.com/vmihailenco/msgpack/v5 v5.2.0/go.mod h1:fEM7KuHcnm0GvDCztRpw9hV0PuoO2ciTismP6vjggcM=
 github.com/vmihailenco/msgpack/v5 v5.3.0 h1:8G3at/kelmBKeHY6d6cKnGsYO3BLn+uubitdOtOhyNI=
 github.com/vmihailenco/msgpack/v5 v5.3.0/go.mod h1:7xyJ9e+0+9SaZT0Wt1RGleJXzli6Q/V5KbhBonMG9jc=
+github.com/vmihailenco/msgpack/v5 v5.3.1 h1:0i85a4dsZh8mC//wmyyTEzidDLPQfQAxZIOLtafGbFY=
+github.com/vmihailenco/msgpack/v5 v5.3.1/go.mod h1:7xyJ9e+0+9SaZT0Wt1RGleJXzli6Q/V5KbhBonMG9jc=
 github.com/vmihailenco/tagparser v0.1.2 h1:gnjoVuB/kljJ5wICEEOpx98oXMWPLj22G67Vbd1qPqc=
 github.com/vmihailenco/tagparser v0.1.2/go.mod h1:OeAg3pn3UbLjkWt+rN9oFYB6u/cQgqMEUPoW2WPyhdI=
 github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=
@@ -898,6 +902,8 @@ golang.org/x/net v0.0.0-20210222171744-9060382bd457/go.mod h1:m0MpNAwzfU5UDzcl9v
 golang.org/x/net v0.0.0-20210226172049-e18ecbb05110/go.mod h1:m0MpNAwzfU5UDzcl9v0D8zg8gWTRqZa9RBIspLL5mdg=
 golang.org/x/net v0.0.0-20210323141857-08027d57d8cf h1:sewfyKLWuY3ko6EI4hbFziQ8bHkfammpzCDfLT92I1c=
 golang.org/x/net v0.0.0-20210323141857-08027d57d8cf/go.mod h1:RBQZq4jEuRlivfhVLdyRGr576XBO4/greRjx4P4O3yc=
+golang.org/x/net v0.0.0-20210324051636-2c4c8ecb7826 h1:lNRDRnwZWawoPHDS50ebYHTOHjctRMLSrUSQFcAHiW4=
+golang.org/x/net v0.0.0-20210324051636-2c4c8ecb7826/go.mod h1:RBQZq4jEuRlivfhVLdyRGr576XBO4/greRjx4P4O3yc=
 golang.org/x/oauth2 v0.0.0-20180620175406-ef147856a6dd/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
@@ -994,6 +1000,8 @@ golang.org/x/sys v0.0.0-20210315160823-c6e025ad8005/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4 h1:EZ2mChiOa8udjfp6rRmswTbtZN/QzUQp4ptM4rnjHvc=
 golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20210324051608-47abb6519492 h1:Paq34FxTluEPvVyayQqMPgHm+vTOrIifmcYxFBx9TLg=
+golang.org/x/sys v0.0.0-20210324051608-47abb6519492/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.0.0-20170915032832-14c0d48ead0c/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
