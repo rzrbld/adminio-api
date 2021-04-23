@@ -1,0 +1,55 @@
+version: "3.7"
+
+services:
+  proxy:
+    image: nginx
+    volumes:
+      - ./nginx:/etc/nginx/
+    ports:
+      # for https communication
+      - "443:80"
+
+  minio:
+    image: minio/minio:RELEASE.2020-11-25T22-36-25Z
+    environment:
+      MINIO_ACCESS_KEY: test
+      MINIO_SECRET_KEY: testtest123
+    command: server /data0 /data1 /data2 /data3
+
+  adminio-ui:
+    container_name: gui
+    image: rzrbld/adminio-ui:release-1.7
+    environment:
+      # you will need to add admnio-api.example.com to you /etc/hosts file to emulate a live service
+      API_BASE_URL: "https://admnio-api.example.com"
+    ports:
+      - 80:80
+
+  # the name of this service is needed to set the correct cookie domain
+  # you will need to change the entry in the nginx.conf file if you want to use another domain
+  adminio.example.com:
+    container_name: api
+    image: adminio:local
+    build:
+      dockerfile: Dockerfile.dev
+      context: ..
+    environment:
+      MINIO_ACCESS: test
+      MINIO_SECRET: testtest123
+      MINIO_HOST_PORT: minio:9000
+      ADMINIO_HOST_PORT: 0.0.0.0:8080
+      ADMINIO_OAUTH_ENABLE: "true"
+      # configuration to use your custom Oauth provider, located at auth.example.com
+      ADMINIO_OAUTH_PROVIDER: auth0
+      ADMINIO_OAUTH_CUSTOM_DOMAIN: auth.example.com/oauth
+      MINIO_OAUTH_SERVER_DOMAIN: auth.example.com/oauth
+      ADMINIO_OAUTH_CALLBACK: https://adminio-api.example.com/auth/callback
+      ADMINIO_OAUTH_CLIENT_ID: your_id
+      ADMINIO_OAUTH_CLIENT_SECRET: your_secret
+      # variables used in file auth0/auth0.go
+      MINIO_OAUTH_TOKEN_PATH: "/token"
+      MINIO_OAUTH_AUTHORIZE_PATH: "/oauth/authorize"
+      MINIO_OAUTH_TOKEN_INFO_PATH: "/token/info"
+    ports:
+      # port exposed for http communication
+      - 90:8080
