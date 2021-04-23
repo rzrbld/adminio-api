@@ -1,0 +1,28 @@
+{
+    "Rules": [
+        {
+            "AbortIncompleteMultipartUpload": {},
+            "Expiration": {
+                "Date": "0001-01-01T00:00:00Z",
+                "Days": 1,
+                "DeleteMarker": false
+            },
+            "ID": "expire-bucket",
+            "Filter": {
+                "And": {},
+                "Tag": {
+                    "Key": "Key",
+                    "Value": "Value"
+                }
+            },
+            "NoncurrentVersionExpiration": {
+                "NoncurrentDays": 0
+            },
+            "NoncurrentVersionTransition": {},
+            "Status": "Enabled",
+            "Transition": {
+                "Date": "0001-01-01T00:00:00Z"
+            }
+        }
+    ]
+}

@@ -214,19 +214,30 @@ var BuckGetLifecycle = func(ctx iris.Context) {
 var BuckSetLifecycle = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 	var lifecycleStr = ctx.FormValue("lifecycle")
-	lcc := &lifecycle.Configuration{}
-	err := xml.Unmarshal([]byte(lifecycleStr), &lcc)
-	if err != nil {
+	var lcc = lifecycle.NewConfiguration()
+
+	if isJSON(lifecycleStr) {
+		jdec := json.NewDecoder(strings.NewReader(lifecycleStr))
+		
+		if err := jdec.Decode(lcc); err != nil {
+			var res = resph.DefaultResHandler(ctx, err)
+			ctx.JSON(res)
+		}
+	}else{
+		err := xml.Unmarshal([]byte(lifecycleStr), &lcc)
+
+		if err != nil {
+			var res = resph.DefaultResHandler(ctx, err)
+			ctx.JSON(res)
+		}
+	}
+	
+	if resph.CheckAuthBeforeRequest(ctx) != false {
+		err := minioClnt.SetBucketLifecycle(context.Background(), bucketName, lcc)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
-		if resph.CheckAuthBeforeRequest(ctx) != false {
-			err := minioClnt.SetBucketLifecycle(context.Background(), bucketName, lcc)
-			var res = resph.DefaultResHandler(ctx, err)
-			ctx.JSON(res)
-		} else {
-			ctx.JSON(resph.DefaultAuthError())
-		}
+		ctx.JSON(resph.DefaultAuthError())
 	}
 }
 
