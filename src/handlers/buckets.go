@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	log "log"
 	"strconv"
 	"strings"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	iris "github.com/kataras/iris/v12"
 	minio "github.com/minio/minio-go/v7"
@@ -17,7 +18,8 @@ import (
 	policy "github.com/minio/minio-go/v7/pkg/policy"
 	"github.com/minio/minio-go/v7/pkg/sse"
 	"github.com/minio/minio-go/v7/pkg/tags"
-	madmin "github.com/minio/minio/pkg/madmin"
+
+	madmin "github.com/minio/madmin-go"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
 )
@@ -29,7 +31,7 @@ func getPolicyWithName(bucketName string) (string, string, error) {
 	policyShort := "none"
 	if bp != "" {
 		if err = json.Unmarshal([]byte(bp), &p); err != nil {
-			fmt.Println("Error Unmarshal policy")
+			log.Errorln("Error Unmarshal policy")
 		}
 		pName := string(policy.GetPolicy(p.Statements, bucketName, ""))
 		if pName == string(policy.BucketPolicyNone) && bp != "" {
@@ -99,7 +101,7 @@ var BuckListExtended = func(ctx iris.Context) {
 			bucket := lb[i]
 			bn, err := minioClnt.GetBucketNotification(context.Background(), bucket.Name)
 			if err != nil {
-				log.Print("Error while getting bucket notification", err)
+				log.Errorln("Error while getting bucket notification", err)
 			}
 			bq, _ := madmClnt.GetBucketQuota(context.Background(), bucket.Name)
 			bt, bterr := minioClnt.GetBucketTagging(context.Background(), bucket.Name)
@@ -130,10 +132,10 @@ var BuckSetTags = func(ctx iris.Context) {
 	bucketTags, err := tags.Parse(tagsString, true)
 
 	if err != nil {
-		log.Print("Error while parse bucket tags", err)
+		log.Errorln("Error while parse bucket tags", err)
 	}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err := minioClnt.SetBucketTagging(context.Background(), bucketName, bucketTags)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -145,7 +147,7 @@ var BuckSetTags = func(ctx iris.Context) {
 var BuckGetTags = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		bt, bterr := minioClnt.GetBucketTagging(context.Background(), bucketName)
 
 		btMap := map[string]string{}
@@ -178,7 +180,7 @@ var BuckMake = func(ctx iris.Context) {
 		newBucketObjectLocking, _ = strconv.ParseBool(newBucketObjectLockingStr)
 	}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		newBucketOpts := minio.MakeBucketOptions{
 			Region:        newBucketRegion,
 			ObjectLocking: newBucketObjectLocking,
@@ -194,7 +196,7 @@ var BuckMake = func(ctx iris.Context) {
 var BuckDelete = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err := minioClnt.RemoveBucket(context.Background(), bucketName)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -218,12 +220,12 @@ var BuckSetLifecycle = func(ctx iris.Context) {
 
 	if isJSON(lifecycleStr) {
 		jdec := json.NewDecoder(strings.NewReader(lifecycleStr))
-		
+
 		if err := jdec.Decode(lcc); err != nil {
 			var res = resph.DefaultResHandler(ctx, err)
 			ctx.JSON(res)
 		}
-	}else{
+	} else {
 		err := xml.Unmarshal([]byte(lifecycleStr), &lcc)
 
 		if err != nil {
@@ -231,8 +233,8 @@ var BuckSetLifecycle = func(ctx iris.Context) {
 			ctx.JSON(res)
 		}
 	}
-	
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err := minioClnt.SetBucketLifecycle(context.Background(), bucketName, lcc)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -259,7 +261,7 @@ var BuckSetEvents = func(ctx iris.Context) {
 	var filterPrefix = ctx.FormValue("filterPrefix")
 	var filterSuffix = ctx.FormValue("filterSuffix")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		bucketNotify, err := minioClnt.GetBucketNotification(context.Background(), bucket)
 
 		var newNotification = notification.NewConfig(stsARN)
@@ -283,19 +285,24 @@ var BuckSetEvents = func(ctx iris.Context) {
 		switch arrARN[2] {
 		case "sns":
 			if bucketNotify.AddTopic(newNotification) {
-				err = fmt.Errorf("Overlapping Topic configs")
+				log.Errorln("overlapping Topic configs")
 			}
 		case "sqs":
 			if bucketNotify.AddQueue(newNotification) {
-				err = fmt.Errorf("Overlapping Queue configs")
+				log.Errorln("overlapping Queue configs")
 			}
 		case "lambda":
 			if bucketNotify.AddLambda(newNotification) {
-				err = fmt.Errorf("Overlapping lambda configs")
+				log.Errorln("overlapping lambda configs")
 			}
 		}
 
+		if err != nil {
+			log.Errorln("Error:", err)
+		}
+
 		err = minioClnt.SetBucketNotification(context.Background(), bucket, bucketNotify)
+
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
 	} else {
@@ -306,7 +313,7 @@ var BuckSetEvents = func(ctx iris.Context) {
 var BuckRemoveEvents = func(ctx iris.Context) {
 	var bucket = ctx.FormValue("bucket")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err := minioClnt.RemoveAllBucketNotification(context.Background(), bucket)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -323,7 +330,7 @@ var BuckSetQuota = func(ctx iris.Context) {
 	var quota, _ = strconv.ParseUint(quotaStr, 10, 64)
 	bucketQuota := &madmin.BucketQuota{Quota: quota, Type: quotaType}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.SetBucketQuota(context.Background(), bucket, bucketQuota)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -335,7 +342,7 @@ var BuckSetQuota = func(ctx iris.Context) {
 var BuckGetQuota = func(ctx iris.Context) {
 	var bucket = ctx.FormValue("bucketName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		bq, err := madmClnt.GetBucketQuota(context.Background(), bucket)
 		var res = resph.BodyResHandler(ctx, err, bq)
 		ctx.JSON(res)
@@ -349,7 +356,7 @@ var BuckRemoveQuota = func(ctx iris.Context) {
 	var quota, _ = strconv.ParseUint("0", 10, 64)
 	bucketQuota := &madmin.BucketQuota{Quota: quota}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.SetBucketQuota(context.Background(), bucket, bucketQuota)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -361,7 +368,7 @@ var BuckRemoveQuota = func(ctx iris.Context) {
 var BuckGetPolicy = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		pName, bp, err := getPolicyWithName(bucketName)
 
 		respBp := iris.Map{"policy": bp, "name": pName}
@@ -386,13 +393,13 @@ var BuckSetPolicy = func(ctx iris.Context) {
 			p.Statements = policy.SetPolicy(p.Statements, policy.BucketPolicy(bucketPolicy), bucket, "")
 			policyJSON, err := json.Marshal(p)
 			if err != nil {
-				fmt.Println("Error marshal json", err, string(policyJSON))
+				log.Errorln("Error marshal json", err, string(policyJSON))
 			}
 			policyStr = string(policyJSON)
 		}
 	}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = minioClnt.SetBucketPolicy(context.Background(), bucket, policyStr)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -404,7 +411,7 @@ var BuckSetPolicy = func(ctx iris.Context) {
 var BuckGetEncryption = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		ec, err := minioClnt.GetBucketEncryption(context.Background(), bucketName)
 		var res = resph.BodyResHandler(ctx, err, ec)
 		ctx.JSON(res)
@@ -427,14 +434,14 @@ var BuckSetEncryption = func(ctx iris.Context) {
 	case "sse-s3":
 		sseConf = sse.NewConfigurationSSES3()
 	default:
-		encErr = fmt.Errorf("Invalid encryption algorithm %s", bucketEncType)
+		encErr = fmt.Errorf("invalid encryption algorithm %s", bucketEncType)
 	}
 
 	if encErr != nil {
 		var res = resph.DefaultResHandler(ctx, encErr)
 		ctx.JSON(res)
 	} else {
-		if resph.CheckAuthBeforeRequest(ctx) != false {
+		if resph.CheckAuthBeforeRequest(ctx) {
 			err := minioClnt.SetBucketEncryption(context.Background(), bucketName, sseConf)
 			var res = resph.DefaultResHandler(ctx, err)
 			ctx.JSON(res)
@@ -447,7 +454,7 @@ var BuckSetEncryption = func(ctx iris.Context) {
 var BuckRemoveEncryption = func(ctx iris.Context) {
 	var bucketName = ctx.FormValue("bucketName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err := minioClnt.RemoveBucketEncryption(context.Background(), bucketName)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)

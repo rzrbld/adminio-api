@@ -2,19 +2,23 @@ package handlers
 
 import (
 	"context"
+
 	iris "github.com/kataras/iris/v12"
-	madmin "github.com/minio/minio/pkg/madmin"
-	resph "github.com/rzrbld/adminio-api/response"
-	log "log"
+
 	strconv "strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+
+	madmin "github.com/minio/madmin-go"
+	resph "github.com/rzrbld/adminio-api/response"
 )
 
 var GrSetStatus = func(ctx iris.Context) {
 	var group = ctx.FormValue("group")
 	var status = ctx.FormValue("status")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		var status = madmin.GroupStatus(status)
 		err = madmClnt.SetGroupStatus(context.Background(), group, status)
 		var res = resph.DefaultResHandler(ctx, err)
@@ -27,7 +31,7 @@ var GrSetStatus = func(ctx iris.Context) {
 var GrSetDescription = func(ctx iris.Context) {
 	var group = ctx.FormValue("group")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		grp, err := madmClnt.GetGroupDescription(context.Background(), group)
 		var res = resph.BodyResHandler(ctx, err, grp)
 		ctx.JSON(res)
@@ -45,11 +49,11 @@ var GrUpdateMembers = func(ctx iris.Context) {
 
 	gar.IsRemove, err = strconv.ParseBool(ctx.FormValue("IsRemove"))
 	if err != nil {
-		log.Print(err)
+		log.Errorln(err)
 		ctx.JSON(iris.Map{"error": err.Error()})
 	}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.UpdateGroupMembers(context.Background(), gar)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)

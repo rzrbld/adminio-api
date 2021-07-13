@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	log "github.com/sirupsen/logrus"
+
 	iris "github.com/kataras/iris/v12"
 	audit "github.com/rzrbld/adminio-api/audit"
 	cnf "github.com/rzrbld/adminio-api/config"
 	auth "github.com/rzrbld/adminio-api/oauth"
-	log "log"
 )
 
 func DefaultResHandler(ctx iris.Context, err error) iris.Map {
@@ -19,8 +20,6 @@ func DefaultResHandler(ctx iris.Context, err error) iris.Map {
 	} else {
 		return DefaultResConstructor(err)
 	}
-
-	return nil
 }
 
 func CheckAuthBeforeRequest(ctx iris.Context) bool {
@@ -46,13 +45,12 @@ func BodyResHandler(ctx iris.Context, err error, body interface{}) interface{} {
 	} else {
 		return BodyResConstructor(err, body)
 	}
-	return nil
 }
 
 func BodyResConstructor(err error, body interface{}) interface{} {
 	var resp interface{}
 	if err != nil {
-		log.Print(err)
+		log.Errorln(err)
 		resp = iris.Map{"error": err.Error()}
 	} else {
 		resp = body
@@ -63,7 +61,7 @@ func BodyResConstructor(err error, body interface{}) interface{} {
 func DefaultResConstructor(err error) iris.Map {
 	var resp iris.Map
 	if err != nil {
-		log.Print(err)
+		log.Errorln(err)
 		resp = iris.Map{"error": err.Error()}
 	} else {
 		resp = iris.Map{"Success": "OK"}

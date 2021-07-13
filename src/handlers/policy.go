@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"context"
-	iris "github.com/kataras/iris/v12"
-	iampolicy "github.com/minio/minio/pkg/iam/policy"
-	resph "github.com/rzrbld/adminio-api/response"
-	log "log"
 	strconv "strconv"
-	"strings"
+
+	log "github.com/sirupsen/logrus"
+
+	iris "github.com/kataras/iris/v12"
+	resph "github.com/rzrbld/adminio-api/response"
 )
 
 var PolList = func(ctx iris.Context) {
@@ -21,10 +21,11 @@ var PolAdd = func(ctx iris.Context) {
 	p.policyName = ctx.FormValue("policyName")
 	p.policyString = ctx.FormValue("policyString")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
-		policy, err := iampolicy.ParseConfig(strings.NewReader(p.policyString))
+	if resph.CheckAuthBeforeRequest(ctx) {
+		// policy, err := iampolicy.ParseConfig(strings.NewReader(p.policyString))
+		policy := p.policyString
 		if err == nil {
-			err = madmClnt.AddCannedPolicy(context.Background(), p.policyName, policy)
+			err = madmClnt.AddCannedPolicy(context.Background(), p.policyName, []byte(policy))
 		}
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -37,7 +38,7 @@ var PolDelete = func(ctx iris.Context) {
 	p := policySet{}
 	p.policyName = ctx.FormValue("policyName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.RemoveCannedPolicy(context.Background(), p.policyName)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -55,11 +56,11 @@ var PolSet = func(ctx iris.Context) {
 	isGroupBool, err := strconv.ParseBool(p.isGroup)
 
 	if err != nil {
-		log.Print(err)
+		log.Errorln(err)
 		ctx.JSON(iris.Map{"error": err.Error()})
 	}
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.SetPolicy(context.Background(), p.policyName, p.entityName, isGroupBool)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)

@@ -20,7 +20,7 @@ import (
 	"github.com/markbates/goth/providers/salesforce"
 	"github.com/markbates/goth/providers/slack"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rzrbld/goth-provider-wso2"
+	wso2 "github.com/rzrbld/goth-provider-wso2"
 
 	cnf "github.com/rzrbld/adminio-api/config"
 	hdl "github.com/rzrbld/adminio-api/handlers"
@@ -43,14 +43,24 @@ func main() {
 		wso2.New(cnf.OauthClientId, cnf.OauthClientSecret, cnf.OauthCallback, cnf.OauthCustomDomain),
 	)
 
-	fmt.Println("\033[31m\r\n ________   ________   _____ ______    ___   ________    ___   ________     \r\n|\\   __  \\ |\\   ___ \\ |\\   _ \\  _   \\ |\\  \\ |\\   ___  \\ |\\  \\ |\\   __  \\    \r\n\\ \\  \\|\\  \\\\ \\  \\_|\\ \\\\ \\  \\\\\\__\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\|\\  \\   \r\n \\ \\   __  \\\\ \\  \\ \\\\ \\\\ \\  \\\\|__| \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\  \r\n  \\ \\  \\ \\  \\\\ \\  \\_\\\\ \\\\ \\  \\    \\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\ \\  \\\\\\  \\ \r\n   \\ \\__\\ \\__\\\\ \\_______\\\\ \\__\\    \\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\__\\\\ \\_______\\\r\n    \\|__|\\|__| \\|_______| \\|__|     \\|__| \\|__| \\|__| \\|__| \\|__| \\|_______|\r\n                                                                            \r\n                                                                            \r\n                                                                            \033[m")
+	fmt.Println("\033[31m\r\n" + `
+	 █████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗██╗ ██████╗ 
+	██╔══██╗██╔══██╗████╗ ████║██║████╗  ██║██║██╔═══██╗
+	███████║██║  ██║██╔████╔██║██║██╔██╗ ██║██║██║   ██║
+	██╔══██║██║  ██║██║╚██╔╝██║██║██║╚██╗██║██║██║   ██║
+	██║  ██║██████╔╝██║ ╚═╝ ██║██║██║ ╚████║██║╚██████╔╝
+	╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝ 													
+	 ` + "\033[m")
 
-	fmt.Println("\033[33mAdmin REST API for http://min.io (minio) s3 server")
-	fmt.Println("Version    : 1.7")
-	fmt.Println("Authors    : rzrbld, 0x003e")
-	fmt.Println("License    : MIT")
-	fmt.Println("GitHub     : https://github.com/rzrbld/adminio-api")
-	fmt.Println("Docker Hub : https://hub.docker.com/r/rzrbld/adminio-api \033[m \r\n")
+	fmt.Println("\033[33m" + `
+	Admin REST API for http://min.io (minio) s3 server
+
+	Version    : 1.8
+	Authors    : rzrbld, 0x003e
+	License    : MIT
+	GitHub     : https://github.com/rzrbld/adminio-api
+	Docker Hub : https://hub.docker.com/r/rzrbld/adminio-api
+	` + "\033[00;00m")
 
 	app := iris.New()
 

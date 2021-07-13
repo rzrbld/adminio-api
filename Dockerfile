@@ -11,7 +11,7 @@ RUN  \
      apk add --no-cache git && \
      git clone https://github.com/rzrbld/adminio-api && cd adminio-api/src/ && go build main.go && cp main /go/bin/adminio
 
-FROM alpine:3.11
+FROM alpine:3.14
 
 EXPOSE 8080
 

@@ -11,7 +11,7 @@ ADD src /src/
 
 RUN  cd /src/ && go build main.go && cp main /go/bin/adminio
 
-FROM alpine:3.11
+FROM alpine:3.14
 
 EXPOSE 8080
 

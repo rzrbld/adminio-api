@@ -3,13 +3,16 @@ package config
 import (
 	"os"
 	strconv "strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
-	Server  = getEnv("MINIO_HOST_PORT", "localhost:9000")
-	Maccess = getEnv("MINIO_ACCESS", "test")
-	Msecret = getEnv("MINIO_SECRET", "testtest123")
-	Region  = getEnv("MINIO_REGION", "us-east-1")
+	Server      = getEnv("MINIO_HOST_PORT", "localhost:9000")
+	Maccess     = getEnv("MINIO_ACCESS", "test")
+	Msecret     = getEnv("MINIO_SECRET", "testtest123")
+	Region      = getEnv("MINIO_REGION", "us-east-1")
+	SvcLogLevel = getEnv("ADMINIO_LOG_LEVEL", "INFO")
 	// Enable object locking by default
 	DefaultObjectLocking, _ = strconv.ParseBool(getEnv("MINIO_DEFAULT_LOCK_OBLECT_ENABLE", "false"))
 	Ssl, _                  = strconv.ParseBool(getEnv("MINIO_SSL", "false"))
@@ -40,4 +43,29 @@ func getEnv(key, fallback string) string {
 	}
 
 	return value
+}
+
+func SetLogLevel() {
+	log.Infoln("Set log level to: ", SvcLogLevel)
+	selectedLogLevel := log.InfoLevel
+	switch loglvl := SvcLogLevel; loglvl {
+	case "TRACE":
+		selectedLogLevel = log.TraceLevel
+	case "DEBUG":
+		selectedLogLevel = log.DebugLevel
+	case "INFO":
+		selectedLogLevel = log.InfoLevel
+	case "WARN":
+		selectedLogLevel = log.WarnLevel
+	case "ERROR":
+		selectedLogLevel = log.ErrorLevel
+	case "FATAL":
+		selectedLogLevel = log.FatalLevel
+	case "PANIC":
+		selectedLogLevel = log.PanicLevel
+	default:
+		log.Errorln("Unknown log level:", SvcLogLevel, ". Fallback to INFO.", "Possible values: \n TRACE \n DEBUG \n INFO \n WARN \n ERROR \n FATAL \n PANIC \n")
+	}
+
+	log.SetLevel(selectedLogLevel)
 }

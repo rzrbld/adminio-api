@@ -3,9 +3,11 @@ package clients
 import (
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	madmin "github.com/minio/minio/pkg/madmin"
+
+	log "github.com/sirupsen/logrus"
+
+	madmin "github.com/minio/madmin-go"
 	cnf "github.com/rzrbld/adminio-api/config"
-	"log"
 )
 
 var MadmClnt, MadmErr = madmin.New(cnf.Server, cnf.Maccess, cnf.Msecret, cnf.Ssl)
@@ -19,10 +21,10 @@ var MinioClnt, MinioErr = minio.New(cnf.Server, &minio.Options{
 
 func main() {
 	if MadmErr != nil {
-		log.Fatal("Error while connecting via admin client ", MadmErr)
+		log.Fatalln("Error while connecting via admin client ", MadmErr)
 	}
 
 	if MinioErr != nil {
-		log.Fatal("Error while connecting via minio client ", MinioErr)
+		log.Fatalln("Error while connecting via minio client ", MinioErr)
 	}
 }

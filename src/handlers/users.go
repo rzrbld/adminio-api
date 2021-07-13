@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"context"
+
 	iris "github.com/kataras/iris/v12"
-	madmin "github.com/minio/minio/pkg/madmin"
+
+	log "github.com/sirupsen/logrus"
+
+	madmin "github.com/minio/madmin-go"
 	resph "github.com/rzrbld/adminio-api/response"
-	log "log"
 )
 
 var UsrList = func(ctx iris.Context) {
@@ -19,7 +22,7 @@ var UsrSetStats = func(ctx iris.Context) {
 	us.accessKey = ctx.FormValue("accessKey")
 	us.status = madmin.AccountStatus(ctx.FormValue("status"))
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.SetUserStatus(context.Background(), us.accessKey, us.status)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -32,7 +35,7 @@ var UsrDelete = func(ctx iris.Context) {
 	user := User{}
 	user.accessKey = ctx.FormValue("accessKey")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.RemoveUser(context.Background(), user.accessKey)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -46,7 +49,7 @@ var UsrAdd = func(ctx iris.Context) {
 	user.accessKey = ctx.FormValue("accessKey")
 	user.secretKey = ctx.FormValue("secretKey")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.AddUser(context.Background(), user.accessKey, user.secretKey)
 		var res = resph.DefaultResHandler(ctx, err)
 		ctx.JSON(res)
@@ -64,10 +67,10 @@ var UsrCreateExtended = func(ctx iris.Context) {
 	u.accessKey = ctx.FormValue("accessKey")
 	u.secretKey = ctx.FormValue("secretKey")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		err = madmClnt.AddUser(context.Background(), u.accessKey, u.secretKey)
 		if err != nil {
-			log.Print(err)
+			log.Errorln(err)
 			ctx.JSON(iris.Map{"error": err.Error()})
 		} else {
 			err = madmClnt.SetPolicy(context.Background(), p.policyName, p.entityName, false)
@@ -89,14 +92,14 @@ var UsrSet = func(ctx iris.Context) {
 	us.status = madmin.AccountStatus(ctx.FormValue("status"))
 	p.policyName = ctx.FormValue("policyName")
 
-	if resph.CheckAuthBeforeRequest(ctx) != false {
+	if resph.CheckAuthBeforeRequest(ctx) {
 		if u.secretKey == "" {
 			err = madmClnt.SetUserStatus(context.Background(), u.accessKey, us.status)
 		} else {
 			err = madmClnt.SetUser(context.Background(), u.accessKey, u.secretKey, us.status)
 		}
 		if err != nil {
-			log.Print(err)
+			log.Errorln(err)
 			ctx.JSON(iris.Map{"error": err.Error()})
 		} else {
 			if p.policyName == "" {

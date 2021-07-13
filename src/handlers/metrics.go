@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"context"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -34,14 +35,14 @@ func RecordMetrics() {
 		for {
 			du, err := madmClnt.DataUsageInfo(context.Background())
 			if err != nil {
-				log.Print("Error while getting bucket size metrics from server")
+				log.Errorln("Error while getting bucket size metrics from server")
 			} else {
-				if len(du.BucketsSizes) != 0 {
-					for k, v := range du.BucketsSizes {
+				if len(du.BucketSizes) != 0 {
+					for k, v := range du.BucketSizes {
 						bucketsSizes.WithLabelValues(string(k)).Set(float64(v))
 					}
 				}
-				objectsCount.Set(float64(du.ObjectsCount))
+				objectsCount.Set(float64(du.ObjectsTotalCount))
 				objectsSize.Set(float64(du.ObjectsTotalSize))
 				bucketsCount.Set(float64(du.BucketsCount))
 			}
