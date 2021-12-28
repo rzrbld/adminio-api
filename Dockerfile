@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine
+FROM golang:1.17-alpine
 
 LABEL maintainer="rzrbld <razblade@gmail.com>"
 
@@ -11,7 +11,7 @@ RUN  \
      apk add --no-cache git && \
      git clone https://github.com/rzrbld/adminio-api && cd adminio-api/src/ && go build main.go && cp main /go/bin/adminio
 
-FROM alpine:3.14
+FROM alpine:3.15
 
 EXPOSE 8080
 
