@@ -55,7 +55,7 @@ func main() {
 	fmt.Println("\033[33m" + `
 	Admin REST API for http://min.io (minio) s3 server
 
-	Version    : 1.8
+	Version    : 1.81
 	Authors    : rzrbld, 0x003e
 	License    : MIT
 	GitHub     : https://github.com/rzrbld/adminio-api
