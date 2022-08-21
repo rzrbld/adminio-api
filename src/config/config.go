@@ -16,6 +16,8 @@ var (
 	// Enable object locking by default
 	DefaultObjectLocking, _ = strconv.ParseBool(getEnv("MINIO_DEFAULT_LOCK_OBLECT_ENABLE", "false"))
 	Ssl, _                  = strconv.ParseBool(getEnv("MINIO_SSL", "false"))
+	SSLSkipVerify, _        = strconv.ParseBool(getEnv("MINIO_SSL_INSECURE", "false"))
+	SSLCACertFile           = getEnv("MINIO_SSL_CACERT", "")
 	ServerHostPort          = getEnv("ADMINIO_HOST_PORT", "localhost:8080")
 	AdminioCORS             = getEnv("ADMINIO_CORS_DOMAIN", "*")
 	// AES only supports key sizes of 16, 24 or 32 bytes.
