@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"os"
 
+	log "github.com/sirupsen/logrus"
+
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-
-	log "github.com/sirupsen/logrus"
 
 	madmin "github.com/minio/madmin-go"
 	cnf "github.com/rzrbld/adminio-api/config"
@@ -40,9 +40,7 @@ func init() {
 	if err == nil {
 		MadmClnt.SetCustomTransport(tr)
 	}
-}
 
-func main() {
 	if MadmErr != nil {
 		log.Fatalln("Error while connecting via admin client ", MadmErr)
 	}
