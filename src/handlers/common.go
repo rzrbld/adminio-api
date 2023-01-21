@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	madmin "github.com/minio/madmin-go"
+	madmin "github.com/minio/madmin-go/v2"
 	clients "github.com/rzrbld/adminio-api/clients"
 )
 

@@ -13,7 +13,7 @@ import (
 	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
-	madmin "github.com/minio/madmin-go"
+	madmin "github.com/minio/madmin-go/v2"
 	cnf "github.com/rzrbld/adminio-api/config"
 )
 

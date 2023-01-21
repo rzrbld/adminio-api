@@ -19,7 +19,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/sse"
 	"github.com/minio/minio-go/v7/pkg/tags"
 
-	madmin "github.com/minio/madmin-go"
+	madmin "github.com/minio/madmin-go/v2"
 	cnf "github.com/rzrbld/adminio-api/config"
 	resph "github.com/rzrbld/adminio-api/response"
 )

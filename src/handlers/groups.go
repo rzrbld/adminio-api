@@ -10,7 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	madmin "github.com/minio/madmin-go"
+	madmin "github.com/minio/madmin-go/v2"
 	resph "github.com/rzrbld/adminio-api/response"
 )
 
